@@ -1,38 +1,32 @@
 #ifndef JOB_H
 #define JOB_H
 
-#include <cstdint>
+#include <string>
+#include <unordered_set>
+#include <fstream>
 
-// Forward declaration to avoid circular dependency
-class MatchingEngine;
-
-/**
- * @brief Abstract base class representing a unit of work
- *        that can be executed by the MatchingEngine.
- */
 class Job {
+private:
+    int id;
+    std::string title;
+    std::unordered_set<std::string> requiredSkills;
+
 public:
-    // Each job has a unique id (useful for logging / debugging)
-    explicit Job(std::uint64_t id);
-    virtual ~Job() = default;
+    Job(
+        int id = 0,
+        std::string title = ""
+    );
 
-    // Prevent copying (jobs are usually owned/executed once)
-    Job(const Job&) = delete;
-    Job& operator=(const Job&) = delete;
+    int getID() const;
+    std::string getTitle() const;
 
-    // Allow moving if needed
-    Job(Job&&) = default;
-    Job& operator=(Job&&) = default;
+    /* ===== Skill Requirements ===== */
+    void addRequiredSkill(const std::string& skill);
+    const std::unordered_set<std::string>& getRequiredSkills() const;
 
-    /**
-     * @brief Execute the job on the matching engine
-     */
-    virtual void execute(MatchingEngine& engine) = 0;
-
-    std::uint64_t id() const;
-
-protected:
-    std::uint64_t jobId_;
+    /* ===== File Handling ===== */
+    void saveToFile(std::ofstream& out) const;
+    void loadFromFile(std::ifstream& in);
 };
 
-#endif // JOB_H
+#endif
