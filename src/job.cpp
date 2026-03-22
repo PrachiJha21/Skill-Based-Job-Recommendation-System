@@ -1,1 +1,75 @@
-#include "../include/job.h"\n#include <ctime>\n\nJob::Job(int id, const std::string& title, const std::string& description, const std::string& company)\n    : id(id), title(title), description(description), company(company), status("open"), createdAt(std::time(nullptr)) {\n}\n\nint Job::getId() const {\n    return id;\n}\n\nstd::string Job::getTitle() const {\n    return title;\n}\n\nstd::string Job::getDescription() const {\n    return description;\n}\n\nstd::string Job::getCompany() const {\n    return company;\n}\n\nconst std::vector<std::string>& Job::getRequiredSkills() const {\n    return requiredSkills;\n}\n\nconst std::vector<std::string>& Job::getOptionalSkills() const {\n    return optionalSkills;\n}\n\nstd::string Job::getStatus() const {\n    return status;\n}\n\nvoid Job::setTitle(const std::string& title) {\n    this->title = title;\n}\n\nvoid Job::setDescription(const std::string& description) {\n    this->description = description;\n}\n\nvoid Job::setStatus(const std::string& status) {\n    this->status = status;\n}\n\nvoid Job::addRequiredSkill(const std::string& skill) {\n    requiredSkills.push_back(skill);\n}\n\nvoid Job::addOptionalSkill(const std::string& skill) {\n    optionalSkills.push_back(skill);\n}
+#include "job.h"
+
+/* =========================
+   Constructor
+   ========================= */
+
+Job::Job(
+    int id,
+    std::string title
+)
+    : id(id),
+      title(title) {}
+
+/* =========================
+   Getters
+   ========================= */
+
+int Job::getID() const {
+    return id;
+}
+
+std::string Job::getTitle() const {
+    return title;
+}
+
+/* =========================
+   Skill Requirements
+   ========================= */
+
+void Job::addRequiredSkill(const std::string& skill) {
+    if (!skill.empty()) {
+        requiredSkills.insert(skill);
+    }
+}
+
+const std::unordered_set<std::string>& Job::getRequiredSkills() const {
+    return requiredSkills;
+}
+
+/* =========================
+   File Handling
+   ========================= */
+
+void Job::saveToFile(std::ofstream& out) const {
+    out << id << "\n";
+    out << title << "\n";
+
+    out << requiredSkills.size() << "\n";
+    for (const auto& skill : requiredSkills) {
+        out << skill << "\n";
+    }
+}
+
+void Job::loadFromFile(std::ifstream& in) {
+    if (!(in >> id)) {
+        return;
+    }
+
+    in.ignore(100000, '\n');
+    std::getline(in, title);
+
+    size_t skillCount = 0;
+    in >> skillCount;
+    in.ignore(100000, '\n');
+
+    requiredSkills.clear();
+    for (size_t i = 0; i < skillCount; ++i) {
+        std::string skill;
+        std::getline(in, skill);
+
+        if (!skill.empty()) {
+            requiredSkills.insert(skill);
+        }
+    }
+}
