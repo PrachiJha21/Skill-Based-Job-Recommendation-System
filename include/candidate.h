@@ -43,6 +43,7 @@ public:
     void viewSkillGap(int jobId) const;
 
     /* ===== Menu ===== */
+    
     void displayMenu() override;
 
     /* ===== File Handling ===== */

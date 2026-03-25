@@ -1,4 +1,4 @@
-#include "../include/application.h"
+#include "application.h"
 #include <iostream>
 #include <stdexcept>
 

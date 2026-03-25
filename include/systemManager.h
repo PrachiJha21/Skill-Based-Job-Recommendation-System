@@ -37,6 +37,10 @@ private:
     int nextJobId;
     int nextApplicationId;
 
+    /* ===== Password Encryption ===== */
+   // std::string encryptPassword();
+
+
     /* ===== Singleton ===== */
     SystemManager();
 
@@ -50,6 +54,7 @@ public:
     /* ===== Authentication ===== */
     void registerUser();
     User* loginUser();
+
 
     /* ===== Job Management ===== */
     void addJob(Job* job);
