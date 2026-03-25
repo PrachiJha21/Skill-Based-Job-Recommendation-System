@@ -1,115 +1,201 @@
 #include "candidate.h"
-#include <iostream>
-#include <algorithm>
+#include "systemManager.h"
+#include "matchingengine.h"
+#include "job.h"
 
-//Constructor
+#include <iostream>
+
+using namespace std;
+
+/* =========================================================
+   Constructor
+   ========================================================= */
+
 Candidate::Candidate(
     int id,
-    std::string username,
-    std::string password,
-    std::string email
-) : User(id, username, password, "candidate", email), profileStrengthScore(0.0) {}
+    string username,
+    string password,
+    string email
+)
+    : User(id, username, password, "candidate", email),
+      profileStrengthScore(0.0) {}
 
-//Skill Management
+/* =========================================================
+   Skill Management
+   ========================================================= */
 
-void Candidate::addSkill(const std::string& skill) {
+void Candidate::addSkill(const string& skill) {
     skills.insert(skill);
     updateProfileStrength();
+    cout << "Skill added successfully.\n";
 }
 
-const std::unordered_set<std::string>& Candidate::getSkills() const {
+void Candidate::removeSkill(const string& skill) {
+    if (skills.erase(skill)) {
+        updateProfileStrength();
+        cout << "Skill removed successfully.\n";
+    } else {
+        cout << "Skill not found.\n";
+    }
+}
+
+const unordered_set<string>& Candidate::getSkills() const {
     return skills;
 }
 
-//Matching and Recommendation
-
-// Placeholder implementations
+/* =========================================================
+   Profile Strength
+   ========================================================= */
 
 double Candidate::calculateMatch(int /*jobId*/) const {
     //Placeholder: MatchingEngine should supplu real ranked Jobs
     return {};
 }
-
-//  Job Application
-
-void Candidate::applyForJob(int jobId) {
-    if (std::find(appliedJobIDs.begin(), appliedJobIDs.end(), jobId) == appliedJobIDs.end()) {
-        appliedJobIDs.push_back(jobId);
-        std::cout << "Applied for job ID: " << jobId << std::endl;
-    } else {
-        std::cout << "Already applied for job ID: " << jobId << std::endl;
-    }
-}
-
-// Profile Strength
-
 void Candidate::updateProfileStrength() {
-    //Simple logic: More skills = higher strength
-    profileStrengthScore = static_cast<double>(skills.size());
+    profileStrengthScore = static_cast<double>(skills.size()) * 10.0;
 }
 
 double Candidate::getProfileStrength() const {
     return profileStrengthScore;
 }
 
-// Skill Gap
+/* =========================================================
+   Job Application
+   ========================================================= */
+
+void Candidate::applyForJob(int jobId) {
+    SystemManager::getInstance().submitApplication(
+        getID(), jobId, 0.0
+    );
+    appliedJobIDs.push_back(jobId);
+}
+
+/* =========================================================
+   Skill Gap
+   ========================================================= */
 
 void Candidate::viewSkillGap(int jobId) const {
-    std::cout << "Skill gap for job ID: " << jobId << "is not implemented yet. \n";
-}
+    auto gaps = SystemManager::getInstance().getSkillGap(*this, jobId);
 
-// Menu
-
-void Candidate::displayMenu() {
-    std::cout << "\n === Candidate Menu === \n";
-    std::cout << "1. Add Skill\n";
-    std::cout << "2. Remove Skill\n";
-    std::cout << "3. View Profile Strength\n";
-    std::cout << "4. Apply for Job\n";
-    std::cout << "5. Logout\n";
-}
-
-// File Handling
-
-void Candidate::saveToFile(std::ofstream& out) const {
-    User::saveToFile(out); //Save base User data
-
-    //Save skills
-    out << skills.size() << "\n";
-    for (const auto& skill : skills) {
-        out << skill << "\n";
+    if (gaps.empty()) {
+        cout << "No skill gap. You match this job well.\n";
+        return;
     }
 
-    //Save profile strength
-    out << profileStrengthScore << "\n";
+    cout << "Missing skills:\n";
+    for (const string& skill : gaps) {
+        cout << "- " << skill << endl;
+    }
 }
 
+/* =========================================================
+   Candidate Menu (SESSION LOOP)
+   ========================================================= */
 
-void Candidate::loadFromFile(std::ifstream& in) {
-    // Load base User data
+void Candidate::displayMenu() {
+    int choice;
+
+    do {
+        cout << "\n======== Candidate Menu ========\n";
+        cout << "1. Add Skill\n";
+        cout << "2. Remove Skill\n";
+        cout << "3. View Profile Strength\n";
+        cout << "4. View Top Matching Jobs\n";
+        cout << "5. View Skill Gap for Job\n";
+        cout << "6. Apply for Job\n";
+        cout << "7. Logout\n";
+        cout << "Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1: {
+            string skill;
+            cout << "Enter skill: ";
+            cin >> skill;
+            addSkill(skill);
+            break;
+        }
+
+        case 2: {
+            string skill;
+            cout << "Enter skill to remove: ";
+            cin >> skill;
+            removeSkill(skill);
+            break;
+        }
+
+        case 3:
+            cout << "Profile Strength: "
+                 << getProfileStrength() << "%\n";
+            break;
+
+        case 4: {
+            auto matches =
+                SystemManager::getInstance().getTopMatchingJobs(*this);
+
+            if (matches.empty()) {
+                cout << "No matching jobs found.\n";
+            } else {
+                cout << "Top Matching Job IDs:\n";
+                for (int id : matches) {
+                    cout << "- Job ID: " << id << endl;
+                }
+            }
+            break;
+        }
+
+        case 5: {
+            int jobId;
+            cout << "Enter Job ID: ";
+            cin >> jobId;
+            viewSkillGap(jobId);
+            break;
+        }
+
+        case 6: {
+            int jobId;
+            cout << "Enter Job ID to apply: ";
+            cin >> jobId;
+            applyForJob(jobId);
+            break;
+        }
+
+        case 7:
+            cout << "Logging out...\n";
+            break;
+
+        default:
+            cout << "Invalid choice.\n";
+        }
+
+    } while (choice != 7);  // ✅ SESSION ENDS ONLY ON LOGOUT
+}
+
+/* =========================================================
+   File Handling
+   ========================================================= */
+
+void Candidate::saveToFile(ofstream& out) const {
+    User::saveToFile(out);
+
+    out << skills.size() << endl;
+    for (const auto& skill : skills) {
+        out << skill << endl;
+    }
+}
+
+void Candidate::loadFromFile(ifstream& in) {
     User::loadFromFile(in);
 
-    // Load skills
-    size_t skillCount;
-    in >> skillCount;
+    size_t count;
+    in >> count;
+
     skills.clear();
-    for (size_t i = 0; i < skillCount; ++i) {
-        std::string skill;
+    for (size_t i = 0; i < count; i++) {
+        string skill;
         in >> skill;
         skills.insert(skill);
     }
 
-    // Load applied jobs
-    size_t jobCount;
-    in >> jobCount;
-    appliedJobIDs.clear();
-    for (size_t i = 0; i < jobCount; ++i) {
-        int jobId;
-        in >> jobId;
-        appliedJobIDs.push_back(jobId);
-    }
-
-    
-// Load profile strength
-    in >> profileStrengthScore;
+    updateProfileStrength();
 }

@@ -1,5 +1,5 @@
 #include "systemManager.h"
-
+#include <conio.h>
 #include "user.h"
 #include "candidate.h"
 #include "employer.h"
@@ -12,6 +12,26 @@
 
 using namespace std;
 
+/*Masked Password Input*/
+
+std::string getMaskedPassword() {
+    std::string password;
+    char ch;
+
+    while ((ch = _getch()) != '\r') {  // Enter key
+        if (ch == '\b') {              // Backspace
+            if (!password.empty()) {
+                password.pop_back();
+                std::cout << "\b \b";
+            }
+        } else {
+            password.push_back(ch);
+            std::cout << '*';
+        }
+    }
+    std::cout << std::endl;
+    return password;
+}
 /* =========================================================
    Singleton Implementation
    ========================================================= */
@@ -37,7 +57,7 @@ void SystemManager::mainMenu() {
         cout << "\n===== SKILL-BASED JOB MATCHING SYSTEM =====\n";
         cout << "1. Register\n";
         cout << "2. Login\n";
-        cout << "0. Exit\n";
+        cout << "3. Exit\n";
         cout << "Choice: ";
         cin >> choice;
 
@@ -54,15 +74,16 @@ void SystemManager::mainMenu() {
             break;
         }
 
-        case 0:
+        case 3:
             saveData();
             cout << "Exiting system...\n";
-            break;
+            return;
+            //break;
 
         default:
             cout << "Invalid choice.\n";
         }
-    } while (choice != 0);
+    } while (true);
 }
 
 /* =========================================================
@@ -80,12 +101,25 @@ void SystemManager::registerUser() {
     cout << "Choice: ";
     cin >> roleChoice;
 
+    // cin>> ws; // Clear input buffer before getline
+
     cout << "Username: ";
-    cin >> username;
-    cout << "Password: ";
-    cin >> password;
+    getline(cin>>ws, username);
     cout << "Email: ";
-    cin >> email;
+    getline(cin>>ws, email);
+   
+    cout << "Password: ";
+    password = getMaskedPassword();
+
+    
+    // ✅ EMAIL UNIQUENESS CHECK
+    if (candidates.count(email) ||
+        employers.count(email) ||
+        admins.count(email)) {
+
+        cout << "Error: This email is already registered.\n";
+        return;
+    }
 
     int id = generateUserId();
 
@@ -110,9 +144,9 @@ User* SystemManager::loginUser() {
     string email, password;
 
     cout << "\nEmail: ";
-    cin >> email;
+    getline(cin>>ws, email);
     cout << "Password: ";
-    cin >> password;
+    password = getMaskedPassword();
 
     if (candidates.count(email) &&
         candidates[email]->authenticate(password))
@@ -215,15 +249,68 @@ vector<string> SystemManager::getSkillGap(
 }
 
 /* =========================================================
-   File Handling (Skeleton)
+   File Handling 
    ========================================================= */
 
 void SystemManager::loadData() {
-    cout << "Loading system data...\n";
+    std::ifstream fin("users.txt");
+
+    if (!fin.is_open()) {
+        std::cout << "No existing data found. Starting fresh.\n";
+        return;
+    }
+
+    // Clear existing in-memory data
+    candidates.clear();
+    employers.clear();
+    admins.clear();
+
+    int id;
+    std::string username, role, email;
+    size_t passwordHash;
+
+    while (fin >> id >> username >> passwordHash >> role >> email) {
+
+        if (role == "candidate") {
+            Candidate* c = new Candidate(id, username, "", email);
+            c->loadFromFile(fin);
+            candidates[email] = c;
+        }
+        else if (role == "employer") {
+            Employer* e = new Employer(id, username, "", email);
+            e->loadFromFile(fin);
+            employers[email] = e;
+        }
+        else if (role == "admin") {
+            Admin* a = new Admin(id, username, "", email);
+            a->loadFromFile(fin);
+            admins[email] = a;
+        }
+
+        // Make sure future IDs don't collide
+        nextUserId = std::max(nextUserId, id + 1);
+    }
+
+    fin.close();
+    std::cout << "System data loaded successfully.\n";
 }
 
 void SystemManager::saveData() {
-    cout << "Saving system data...\n";
+    std::ofstream fout("users.txt");
+
+    for (auto& [email, candidate] : candidates) {
+        candidate->saveToFile(fout);
+    }
+
+    for (auto& [email, employer] : employers) {
+        employer->saveToFile(fout);
+    }
+
+    for (auto& [email, admin] : admins) {
+        admin->saveToFile(fout);
+    }
+
+    fout.close();
 }
 
 /* =========================================================

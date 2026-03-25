@@ -66,12 +66,56 @@ const std::vector<int>& Employer::getPostedJobIDs() const {
    ========================= */
 
 void Employer::displayMenu() {
-    std::cout << "\n=== Employer Menu ===\n";
-    std::cout << "1. Post Job\n";
-    std::cout << "2. Edit Job\n";
-    std::cout << "3. Delete Job\n";
-    std::cout << "4. View Applicants\n";
-    std::cout << "5. Logout\n";
+    int choice;
+
+    do {
+        std::cout << "\n======== Employer Menu ========\n";
+        std::cout << "1. Post Job\n";
+        std::cout << "2. Edit Job\n";
+        std::cout << "3. Delete Job\n";
+        std::cout << "4. View Applicants\n";
+        std::cout << "5. Logout\n";
+        std::cout << "Choice: ";
+        std::cin >> choice;
+
+        switch (choice) {
+        case 1:
+            postJob();
+            break;
+
+        case 2: {
+            int jobId;
+            std::cout << "Enter Job ID to edit: ";
+            std::cin >> jobId;
+            editJob(jobId);
+            break;
+        }
+
+        case 3: {
+            int jobId;
+            std::cout << "Enter Job ID to delete: ";
+            std::cin >> jobId;
+            deleteJob(jobId);
+            break;
+        }
+
+        case 4: {
+            int jobId;
+            std::cout << "Enter Job ID to view applicants: ";
+            std::cin >> jobId;
+            viewApplicants(jobId);
+            break;
+        }
+
+        case 5:
+            std::cout << "Logging out...\n";
+            break;
+
+        default:
+            std::cout << "Invalid choice. Try again.\n";
+        }
+
+    } while (choice != 5);   // ✅ stay in Employer menu until logout
 }
 
 /* =========================

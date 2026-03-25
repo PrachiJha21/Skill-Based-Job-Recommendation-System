@@ -1,53 +1,26 @@
 #include <iostream>
-
 #include "systemManager.h"
-#include "candidate.h"
-#include "job.h"
-#include "matchingengine.h"
-
-using namespace std;
 
 int main() {
-    cout << "=== MODULE TESTING START ===\n";
 
-    // Get system instance
-    SystemManager& system = SystemManager::getInstance();
 
-    // ----- Create a Candidate -----
-    Candidate* c1 = new Candidate(1, "alice", "pass123", "alice@gmail.com");
-    c1->addSkill("C++");
-    c1->addSkill("DSA");
-    c1->addSkill("OOP");
+    std::cout << "=====================================\n";
+    std::cout << " Skill-Based Job Recommendation System\n";
+    std::cout << "=====================================\n\n";
 
-    // ----- Create Jobs -----
-    Job* j1 = new Job(1, "Software Engineer");
-    j1->addRequiredSkill("C++");
-    j1->addRequiredSkill("DSA");
+    try {
+        // Get singleton instance of SystemManager
+        SystemManager& system = SystemManager::getInstance();
 
-    Job* j2 = new Job(2, "Backend Developer");
-    j2->addRequiredSkill("Java");
-    j2->addRequiredSkill("SQL");
-
-    // ----- Add jobs to system -----
-    system.addJob(j1);
-    system.addJob(j2);
-
-    // ----- Run Matching -----
-    cout << "\nTop Matching Jobs:\n";
-    vector<int> matches = system.getTopMatchingJobs(*c1, 5);
-
-    for (int jobId : matches) {
-        cout << "Matched Job ID: " << jobId << endl;
+        system.loadData();     // ✅ LOAD FIRST
+        system.mainMenu();     // ✅ THEN RUN MENU
+        system.saveData();     
+            // Start the application
+            system.mainMenu();
     }
-
-    // ----- Skill Gap Test -----
-    cout << "\nSkill Gap for Job 2:\n";
-    vector<string> gaps = system.getSkillGap(*c1, 2);
-
-    for (const string& skill : gaps) {
-        cout << "Missing: " << skill << endl;
+    catch (const std::exception& e) {
+        std::cerr << "Fatal error: " << e.what() << std::endl;
     }
-
-    cout << "\n=== MODULE TESTING END ===\n";
+    std::cout << "\nSystem terminated safely.\n";
     return 0;
 }
