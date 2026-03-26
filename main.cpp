@@ -15,8 +15,7 @@ int main() {
         system.loadData();     // ✅ LOAD FIRST
         system.mainMenu();     // ✅ THEN RUN MENU
         system.saveData();     
-            // Start the application
-            system.mainMenu();
+            
     }
     catch (const std::exception& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;
