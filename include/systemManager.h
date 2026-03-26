@@ -2,6 +2,7 @@
 #define SYSTEMMANAGER_H
 
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <string>
 
@@ -31,6 +32,8 @@ private:
     /* ===== Job & Application Storage ===== */
     std::unordered_map<int, Job*> jobs;
     std::vector<Application*> applications;
+    
+    std::unordered_set<int> approvedJobs;  // Track approved job IDs
 
     /* ===== ID Counters ===== */
     int nextUserId;
@@ -45,6 +48,16 @@ private:
     SystemManager();
 
 public:
+
+    // Job helpers
+    // int generateJobId();
+    // void addJob(Job* job);
+    Job* getJobById(int jobId);
+    bool removeJob(int jobId);
+
+    // Application helpers
+    std::vector<Application*> getApplicationsForJob(int jobId);
+
     /* ===== Singleton Access ===== */
     static SystemManager& getInstance();
 
@@ -84,6 +97,13 @@ public:
     int generateUserId();
     int generateJobId();
     int generateApplicationId();
+
+    // ===== Admin Accessors =====
+    std::unordered_map<std::string, Candidate*>& getCandidates();
+    std::unordered_map<std::string, Employer*>& getEmployers();
+    std::unordered_map<int, Job*>& getAllJobs();
+    std::unordered_set<int>& getApprovedJobs();
+
 };
 
 #endif

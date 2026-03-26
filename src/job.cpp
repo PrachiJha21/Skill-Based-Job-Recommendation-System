@@ -23,6 +23,15 @@ std::string Job::getTitle() const {
     return title;
 }
 
+void Job::setTitle(const std::string& newTitle) {
+    title = newTitle;
+}
+
+void Job::clearSkills() {
+    requiredSkills.clear();
+}
+
+
 /* =========================
    Skill Requirements
    ========================= */
@@ -35,6 +44,16 @@ void Job::addRequiredSkill(const std::string& skill) {
 
 const std::unordered_set<std::string>& Job::getRequiredSkills() const {
     return requiredSkills;
+}
+
+const std::unordered_set<std::string>& Job::getOptionalSkills() const {
+    return optionalSkills;
+}
+
+void Job::addOptionalSkill(const std::string& skill) {
+    if (!skill.empty()) {
+        optionalSkills.insert(skill);
+    }
 }
 
 /* =========================

@@ -184,34 +184,52 @@ const unordered_map<int, Job*>& SystemManager::getAllJobs() const {
     return jobs;
 }
 
+// Used by edit jobs and clean null check
+Job* SystemManager::getJobById(int jobId) {
+    auto it = jobs.find(jobId);
+    if (it != jobs.end())
+        return it->second;
+    return nullptr;
+}
+
+//Remove Jobs
+
+bool SystemManager::removeJob(int jobId) {
+    auto it = jobs.find(jobId);
+    if (it == jobs.end())
+        return false;
+
+    delete it->second;
+    jobs.erase(it);
+    approvedJobs.erase(jobId);
+    return true;
+}
+
+
+
 /* =========================================================
    Application Management
    ========================================================= */
 
-void SystemManager::submitApplication(int candidateId,
-                                      int jobId,
-                                      double /* matchScore */) {
-    Application* app = new Application(
-        candidateId,
-        UserRole::Candidate,
-        jobId
-    );
-
+void SystemManager::submitApplication(int candidateId, int jobId, double matchScore) {
+    int appId = nextApplicationId++;
+    Application* app = new Application(appId, candidateId, jobId);
     applications.push_back(app);
     cout << "Application submitted successfully.\n";
 }
 
-vector<Application*> SystemManager::getApplicationsForJob(int jobId) const {
-    vector<Application*> result;
+
+vector<Application*> SystemManager::getApplicationsForJob(int jobId) {
+    std::vector<Application*> result;
 
     for (Application* app : applications) {
-        if (app->jobId == jobId) {
+        if (app->getJobId() == jobId) {
             result.push_back(app);
         }
     }
-
     return result;
 }
+
 
 /* =========================================================
    Matching Coordination
@@ -253,7 +271,7 @@ vector<string> SystemManager::getSkillGap(
    ========================================================= */
 
 void SystemManager::loadData() {
-    std::ifstream fin("users.txt");
+    std::ifstream fin("usersdB.txt");
 
     if (!fin.is_open()) {
         std::cout << "No existing data found. Starting fresh.\n";
@@ -265,11 +283,14 @@ void SystemManager::loadData() {
     employers.clear();
     admins.clear();
 
-    int id;
-    std::string username, role, email;
-    size_t passwordHash;
+    
 
-    while (fin >> id >> username >> passwordHash >> role >> email) {
+    while (true) {
+        int id;
+        std::string username, role, email;
+        size_t passwordHash;
+
+        fin >> id >> username >> passwordHash >> role >> email;
 
         if (role == "candidate") {
             Candidate* c = new Candidate(id, username, "", email);
@@ -296,7 +317,7 @@ void SystemManager::loadData() {
 }
 
 void SystemManager::saveData() {
-    std::ofstream fout("users.txt");
+    std::ofstream fout("usersdB.txt");
 
     for (auto& [email, candidate] : candidates) {
         candidate->saveToFile(fout);
@@ -327,4 +348,28 @@ int SystemManager::generateJobId() {
 
 int SystemManager::generateApplicationId() {
     return nextApplicationId++;
+}
+
+/* =========================================================
+   Admin Accessors Implementation
+   ========================================================= */
+
+   std::unordered_map<std::string, Candidate*>&
+SystemManager::getCandidates() {
+    return candidates;
+}
+
+std::unordered_map<std::string, Employer*>&
+SystemManager::getEmployers() {
+    return employers;
+}
+
+std::unordered_map<int, Job*>&
+SystemManager::getAllJobs() {
+    return jobs;
+}
+
+std::unordered_set<int>&
+SystemManager::getApprovedJobs() {
+    return approvedJobs;
 }

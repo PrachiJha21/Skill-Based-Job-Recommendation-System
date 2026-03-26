@@ -1,6 +1,12 @@
 #include "employer.h"
+#include "systemManager.h"
+#include "job.h"
+#include "application.h"
+
 #include <iostream>
 #include <algorithm>
+
+using namespace std;
 
 /* =========================
    Constructor
@@ -8,75 +14,164 @@
 
 Employer::Employer(
     int id,
-    std::string username,
-    std::string password,
-    std::string email,
-    std::string companyName
+    string username,
+    string password,
+    string email,
+    string companyName
 )
     : User(id, username, password, "employer", email),
       companyName(companyName) {}
 
+
 /* =========================
-   Job Management
+   Post Job
    ========================= */
 
 void Employer::postJob() {
-    std::cout << "Posting a new job (handled by MatchingEngine).\n";
-    // MatchingEngine will generate job ID and store it
+    SystemManager& system = SystemManager::getInstance();
+
+    int jobId = system.generateJobId();
+    string title;
+
+    cout << "Enter job title: ";
+    getline(cin >> ws, title);
+
+    Job* job = new Job(jobId, title);
+
+    int skillCount;
+    cout << "How many required skills? ";
+    cin >> skillCount;
+
+    for (int i = 0; i < skillCount; i++) {
+        string skill;
+        cout << "Enter skill " << i + 1 << ": ";
+        getline(cin >> ws, skill);
+        job->addRequiredSkill(skill);
+    }
+
+    system.addJob(job);
+    postedJobIDs.push_back(jobId);
+
+    cout << "Job posted successfully with ID "
+         << jobId << ". Awaiting admin approval.\n";
 }
+
+
+/* =========================
+   Edit Job
+   ========================= */
 
 void Employer::editJob(int jobId) {
-    std::cout << "Editing job with ID: " << jobId << "\n";
-    // MatchingEngine will validate and modify the job
+    SystemManager& system = SystemManager::getInstance();
+    Job* job = system.getJobById(jobId);
+
+    if (!job) {
+        cout << "Job not found.\n";
+        return;
+    }
+
+    string newTitle;
+    cout << "Enter new job title: ";
+    getline(cin >> ws, newTitle);
+    job->setTitle(newTitle);
+
+    cout << "Clear and re‑enter skills? (y/n): ";
+    char choice;
+    cin >> choice;
+
+    if (choice == 'y' || choice == 'Y') {
+        job->clearSkills();
+
+        int skillCount;
+        cout << "How many required skills? ";
+        cin >> skillCount;
+
+        for (int i = 0; i < skillCount; i++) {
+            string skill;
+            cout << "Enter skill " << i + 1 << ": ";
+            getline(cin >> ws, skill);
+            job->addRequiredSkill(skill);
+        }
+    }
+
+    cout << "Job updated successfully.\n";
 }
 
-void Employer::deleteJob(int jobId) {
-    auto it = std::find(postedJobIDs.begin(),
-                        postedJobIDs.end(),
-                        jobId);
 
-    if (it != postedJobIDs.end()) {
-        postedJobIDs.erase(it);
-        std::cout << "Deleted job with ID: " << jobId << "\n";
-    } else {
-        std::cout << "Job ID not found.\n";
+/* =========================
+   Delete Job
+   ========================= */
+
+void Employer::deleteJob(int jobId) {
+    SystemManager& system = SystemManager::getInstance();
+
+    if (!system.removeJob(jobId)) {
+        cout << "Job not found.\n";
+        return;
+    }
+
+    postedJobIDs.erase(
+        remove(postedJobIDs.begin(), postedJobIDs.end(), jobId),
+        postedJobIDs.end()
+    );
+
+    cout << "Job deleted successfully.\n";
+}
+
+
+/* =========================
+   View Applicants
+   ========================= */
+
+void Employer::viewApplicants(int jobId) const {
+    SystemManager& system = SystemManager::getInstance();
+    auto apps = system.getApplicationsForJob(jobId);
+
+    if (apps.empty()) {
+        cout << "No applications for this job yet.\n";
+        return;
+    }
+
+    cout << "\nApplicants for Job ID " << jobId << ":\n";
+
+    for (const Application* app : apps) {
+        cout << "Candidate ID: " << app->getCandidateId()
+             << " | Status: "
+             << Application::statusToString(app->getStatus())
+             << "\n";
     }
 }
 
-void Employer::viewApplicants(int jobId) const {
-    std::cout << "Viewing applicants for job ID: "
-              << jobId
-              << " (handled by MatchingEngine).\n";
-}
 
 /* =========================
    Getters
    ========================= */
 
-std::string Employer::getCompanyName() const {
+string Employer::getCompanyName() const {
     return companyName;
 }
 
-const std::vector<int>& Employer::getPostedJobIDs() const {
+const vector<int>& Employer::getPostedJobIDs() const {
     return postedJobIDs;
 }
 
+
 /* =========================
-   Menu
+   Menu (SESSION LOOP ✅)
    ========================= */
 
 void Employer::displayMenu() {
     int choice;
 
     do {
-        std::cout << "\n======== Employer Menu ========\n";
-        std::cout << "1. Post Job\n";
-        std::cout << "2. Edit Job\n";
-        std::cout << "3. Delete Job\n";
-        std::cout << "4. View Applicants\n";
-        std::cout << "5. Logout\n";
-        std::cout << "Choice: ";
-        std::cin >> choice;
+        cout << "\n======== Employer Menu ========\n";
+        cout << "1. Post Job\n";
+        cout << "2. Edit Job\n";
+        cout << "3. Delete Job\n";
+        cout << "4. View Applicants\n";
+        cout << "5. Logout\n";
+        cout << "Choice: ";
+        cin >> choice;
 
         switch (choice) {
         case 1:
@@ -85,72 +180,67 @@ void Employer::displayMenu() {
 
         case 2: {
             int jobId;
-            std::cout << "Enter Job ID to edit: ";
-            std::cin >> jobId;
+            cout << "Enter Job ID to edit: ";
+            cin >> jobId;
             editJob(jobId);
             break;
         }
 
         case 3: {
             int jobId;
-            std::cout << "Enter Job ID to delete: ";
-            std::cin >> jobId;
+            cout << "Enter Job ID to delete: ";
+            cin >> jobId;
             deleteJob(jobId);
             break;
         }
 
         case 4: {
             int jobId;
-            std::cout << "Enter Job ID to view applicants: ";
-            std::cin >> jobId;
+            cout << "Enter Job ID to view applicants: ";
+            cin >> jobId;
             viewApplicants(jobId);
             break;
         }
 
         case 5:
-            std::cout << "Logging out...\n";
+            cout << "Logging out...\n";
             break;
 
         default:
-            std::cout << "Invalid choice. Try again.\n";
+            cout << "Invalid choice. Try again.\n";
         }
 
-    } while (choice != 5);   // ✅ stay in Employer menu until logout
+    } while (choice != 5);
 }
+
 
 /* =========================
    File Handling
    ========================= */
 
-void Employer::saveToFile(std::ofstream& out) const {
-    // Save base User data
+void Employer::saveToFile(ofstream& out) const {
     User::saveToFile(out);
 
-    // Save company name
     out << companyName << "\n";
-
-    // Save posted job IDs
     out << postedJobIDs.size() << "\n";
-    for (int jobId : postedJobIDs) {
-        out << jobId << " ";
-    }
+
+    for (int id : postedJobIDs)
+        out << id << " ";
     out << "\n";
 }
 
-void Employer::loadFromFile(std::ifstream& in) {
-    // Load base User data
+void Employer::loadFromFile(ifstream& in) {
     User::loadFromFile(in);
 
-    // Load company name
     in >> companyName;
 
-    // Load posted job IDs
-    size_t jobCount;
-    in >> jobCount;
+    size_t count;
+    in >> count;
+
     postedJobIDs.clear();
-    for (size_t i = 0; i < jobCount; ++i) {
-        int jobId;
-        in >> jobId;
-        postedJobIDs.push_back(jobId);
+    for (size_t i = 0; i < count; i++) {
+        int id;
+        in >> id;
+        postedJobIDs.push_back(id);
     }
 }
