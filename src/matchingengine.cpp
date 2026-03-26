@@ -16,22 +16,37 @@ double MatchingEngine::calculateMatchScore(
     const Candidate& candidate,
     const Job& job
 ) {
-    const auto& candidateSkills = candidate.getSkills();
-    const auto& jobSkills = job.getRequiredSkills();
+    const auto& candSkills = candidate.getSkills();
+    const auto& reqSkills  = job.getRequiredSkills();
+    const auto& optSkills  = job.getOptionalSkills();
 
-    if (jobSkills.empty()) {
-        return 0.0;
+    // ----- Required skills -----
+    int matchedReq = 0;
+    for (const auto& skill : reqSkills) {
+        if (candSkills.count(skill))
+            matchedReq++;
     }
 
-    int matchedSkills = 0;
-    for (const auto& skill : jobSkills) {
-        if (candidateSkills.count(skill)) {
-            matchedSkills++;
-        }
+    double requiredScore = 0.0;
+    if (!reqSkills.empty()) {
+        requiredScore =
+            (static_cast<double>(matchedReq) / reqSkills.size()) * 70.0;
     }
 
-    return static_cast<double>(matchedSkills) /
-           static_cast<double>(jobSkills.size());
+    // ----- Optional skills -----
+    int matchedOpt = 0;
+    for (const auto& skill : optSkills) {
+        if (candSkills.count(skill))
+            matchedOpt++;
+    }
+
+    double optionalScore = 0.0;
+    if (!optSkills.empty()) {
+        optionalScore =
+            (static_cast<double>(matchedOpt) / optSkills.size()) * 30.0;
+    }
+
+    return requiredScore + optionalScore;  // FinalScore (0–100)
 }
 
 /*

@@ -2,6 +2,7 @@
 #include "job.h"
 #include "candidate.h"
 #include "employer.h"
+#include "systemManager.h"
 #include <iostream>
 
 using namespace std;
@@ -18,13 +19,64 @@ Admin::Admin(int id,
 // Admin Menu
 // ============================
 void Admin::displayMenu() {
-    cout << "\n===== ADMIN MENU =====\n";
-    cout << "1. Approve Job\n";
-    cout << "2. Remove User\n";
-    cout << "3. Skill Demand Report\n";
-    cout << "4. System Statistics\n";
-    cout << "0. Logout\n";
-    cout << "======================\n";
+    int choice;
+
+    do {
+        cout << "\n======== ADMIN MENU ========\n";
+        cout << "1. Approve Job\n";
+        cout << "2. Remove User\n";
+        cout << "3. Skill Demand Report\n";
+        cout << "4. System Statistics\n";
+        cout << "0. Logout\n";
+        cout << "Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1: {
+            int jobId;
+            cout << "Enter Job ID to approve: ";
+            cin >> jobId;
+            approveJob(jobId, SystemManager::getInstance().getApprovedJobs());
+            break;
+        }
+
+        case 2: {
+            string email;
+            cout << "Enter email to remove: ";
+            cin >> email;
+            removeUser(
+                email,
+                SystemManager::getInstance().getCandidates(),
+                SystemManager::getInstance().getEmployers()
+            );
+            break;
+        }
+
+        case 3:
+            generateSkillDemandReport(
+                SystemManager::getInstance().getAllJobs(),
+                SystemManager::getInstance().getApprovedJobs()
+            );
+            break;
+
+        case 4:
+            systemStatistics(
+                SystemManager::getInstance().getCandidates(),
+                SystemManager::getInstance().getEmployers(),
+                SystemManager::getInstance().getAllJobs(),
+                SystemManager::getInstance().getApprovedJobs()
+            );
+            break;
+
+        case 0:
+            cout << "Logging out...\n";
+            break;
+
+        default:
+            cout << "Invalid choice. Try again.\n";
+        }
+
+    } while (choice != 0);   // ✅ stay in admin session until logout
 }
 
 

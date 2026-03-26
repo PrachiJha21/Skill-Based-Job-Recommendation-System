@@ -3,15 +3,16 @@
 
 #include <string>
 #include <ctime>
+#include <fstream>
 
-// Enum for user role -- only Candidate can apply
-enum class UserRole {
-    Candidate,
-    Employer,
-    Admin
-};
+/*
+ Application
+ - Represents a candidate applying to a job
+ - Persisted permanently in applicationDB.txt
+ - Independent from user storage (users.txt)
+*/
 
-// Enum for application status -- replaces plain string
+// Application status lifecycle
 enum class ApplicationStatus {
     Pending,
     Accepted,
@@ -19,25 +20,57 @@ enum class ApplicationStatus {
 };
 
 class Application {
+private:
+    int applicationId;          // Unique application ID
+    int candidateId;            // ID of the candidate who applied
+    int jobId;                  // ID of the job applied to
+    ApplicationStatus status;   // Current status of application
+    std::time_t appliedDate;    // When application was created
+    std::time_t updatedDate;    // Last status update time
+
 public:
-    int userId;
-    UserRole userRole;       // Must be Candidate to apply
-    int jobId;
-    ApplicationStatus status;
-    std::time_t appliedDate;  // Date application was submitted
-    std::time_t updatedDate;  // Date status was last changed
+    /* =========================
+       Constructors
+       ========================= */
 
-    // Constructor: requires userId, userRole, and jobId
-    Application(int userId, UserRole userRole, int jobId);
+    Application();  // Required for loading from file
 
-    // Update the application status (only valid enum values accepted)
+    Application(
+        int applicationId,
+        int candidateId,
+        int jobId
+    );
+
+    /* =========================
+       Getters
+       ========================= */
+
+    int getApplicationId() const;
+    int getCandidateId() const;
+    int getJobId() const;
+    ApplicationStatus getStatus() const;
+    std::time_t getAppliedDate() const;
+    std::time_t getUpdatedDate() const;
+
+    /* =========================
+       Status Management
+       ========================= */
+
     void updateStatus(ApplicationStatus newStatus);
 
-    // Display application info
-    void display() const;
+    /* =========================
+       Persistence (applicationDB.txt)
+       ========================= */
 
-    // Helper: convert status enum to readable string
-    static std::string statusToString(ApplicationStatus s);
+    void saveToFile(std::ofstream& out) const;
+    void loadFromFile(std::ifstream& in);
+
+    /* =========================
+       Utility helpers
+       ========================= */
+
+    static std::string statusToString(ApplicationStatus status);
+    static ApplicationStatus stringToStatus(const std::string& statusStr);
 };
 
-#endif
+#endif // APPLICATION_H
