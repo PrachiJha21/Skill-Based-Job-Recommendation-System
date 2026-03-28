@@ -7,6 +7,20 @@
 
 using namespace std;
 
+// ============================
+// Static Admin Credentials
+// ============================
+const std::string Admin::ADMIN_EMAIL = "admin@jobrecommendation.com";
+const std::string Admin::ADMIN_PASSWORD = "Admin@Secure123";
+const std::string Admin::ADMIN_USERNAME = "Administrator";
+
+// ============================
+// Admin Authentication
+// ============================
+bool Admin::validateAdminCredentials(const std::string& email, const std::string& password) {
+    return (email == ADMIN_EMAIL && password == ADMIN_PASSWORD);
+}
+
 // Constructor
 Admin::Admin(int id,
              string username,

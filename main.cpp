@@ -2,16 +2,11 @@
 #include "systemManager.h"
 
 int main() {
-
-
-    std::cout << "=====================================\n";
-    std::cout << " Skill-Based Job Recommendation System\n";
-    std::cout << "=====================================\n\n";
-
     try {
         // Get singleton instance of SystemManager
         SystemManager& system = SystemManager::getInstance();
 
+        system.mainMenu();
         system.loadData();     // ✅ LOAD FIRST
         system.mainMenu();     // ✅ THEN RUN MENU
         system.saveData();     

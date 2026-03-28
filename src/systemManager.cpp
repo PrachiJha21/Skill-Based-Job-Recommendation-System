@@ -7,6 +7,7 @@
 #include "job.h"
 #include "application.h"
 #include "matchingengine.h"
+#include <iomanip>
 
 #include <iostream>
 
@@ -54,7 +55,11 @@ void SystemManager::mainMenu() {
     int choice;
 
     do {
-        cout << "\n===== SKILL-BASED JOB MATCHING SYSTEM =====\n";
+        cout << setfill('=') << setw(100) << "=" << endl;
+        cout << setfill(' ');   // reset fill character 
+        cout << setw(17) << "Welcome to Skill Based Job Recommendation System" << endl;
+        cout << setfill('=') << setw(100) << "=" << endl;
+        cout << setfill(' ');
         cout << "1. Register\n";
         cout << "2. Login\n";
         cout << "3. Exit\n";
@@ -83,7 +88,7 @@ void SystemManager::mainMenu() {
         default:
             cout << "Invalid choice.\n";
         }
-    } while (true);
+    } while (choice != 3);
 }
 
 /* =========================================================
@@ -93,15 +98,32 @@ void SystemManager::mainMenu() {
 void SystemManager::registerUser() {
     int roleChoice;
     string username, password, email;
+    int id = generateUserId();
 
-    cout << "\nRegister as:\n";
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
+    cout << setw(17) << "Register as: " << endl;
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');  
     cout << "1. Candidate\n";
     cout << "2. Employer\n";
-    cout << "3. Admin\n";
     cout << "Choice: ";
     cin >> roleChoice;
 
+    if (roleChoice == 1) {
+        candidates[email] = new Candidate(id, username, password, email);
+    }
+    else if (roleChoice == 2) {
+        employers[email] = new Employer(id, username, password, email);
+    }
+    else {
+        cout << "Invalid role selection.\n";
+        return;
+    }
+
     // cin>> ws; // Clear input buffer before getline
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
 
     cout << "Username: ";
     getline(cin>>ws, username);
@@ -111,57 +133,61 @@ void SystemManager::registerUser() {
     cout << "Password: ";
     password = getMaskedPassword();
 
-    
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
+
     // ✅ EMAIL UNIQUENESS CHECK
     if (candidates.count(email) ||
-        employers.count(email) ||
-        admins.count(email)) {
+        employers.count(email) ) {
 
         cout << "Error: This email is already registered.\n";
         return;
     }
 
-    int id = generateUserId();
-
-    if (roleChoice == 1) {
-        candidates[email] = new Candidate(id, username, password, email);
-    }
-    else if (roleChoice == 2) {
-        employers[email] = new Employer(id, username, password, email);
-    }
-    else if (roleChoice == 3) {
-        admins[email] = new Admin(id, username, password, email);
-    }
-    else {
-        cout << "Invalid role selection.\n";
-        return;
-    }
-
     cout << "Registration successful.\n";
+
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
 }
 
 User* SystemManager::loginUser() {
     string email, password;
+
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
 
     cout << "\nEmail: ";
     getline(cin>>ws, email);
     cout << "Password: ";
     password = getMaskedPassword();
 
+    // Check Candidate login
     if (candidates.count(email) &&
         candidates[email]->authenticate(password))
         return candidates[email];
 
+    // Check Employer login
     if (employers.count(email) &&
         employers[email]->authenticate(password))
         return employers[email];
 
-    if (admins.count(email) &&
-        admins[email]->authenticate(password))
+    // Check Admin login using hardcoded credentials
+    if (Admin::validateAdminCredentials(email, password)) {
+        // If admin doesn't exist in the map, create one
+        if (!admins.count(email)) {
+            int id = generateUserId();
+            admins[email] = new Admin(id, Admin::ADMIN_USERNAME, Admin::ADMIN_PASSWORD, email);
+        }
+        cout << "Admin access granted.\n";
         return admins[email];
+    }
 
     cout << "Invalid credentials.\n";
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
     return nullptr;
+
+
 }
 
 /* =========================================================
