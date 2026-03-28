@@ -27,6 +27,12 @@ public:
         int topN = 5
     );
 
+    static std::vector<std::pair<int, double>> getTopMatchingJobsWithScores(
+        const Candidate& candidate,
+        const std::unordered_map<int, Job>& jobs,
+        int topN = 5
+    );
+
     static std::vector<std::string> getSkillGap(
         const Candidate& candidate,
         const Job& job

@@ -29,7 +29,7 @@ public:
     void displayMenu() override;
 
     // Admin actions
-    void approveJob(int jobID, std::unordered_set<int>& approvedJobs);
+    void removeJob(int jobID);
 
     void removeUser(const std::string& email,
                     std::unordered_map<std::string, Candidate*>& candidates,
