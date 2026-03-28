@@ -57,7 +57,7 @@ void SystemManager::mainMenu() {
     do {
         cout << setfill('=') << setw(100) << "=" << endl;
         cout << setfill(' ');   // reset fill character 
-        cout << setw(17) << "Welcome to Skill Based Job Recommendation System" << endl;
+        cout << setw(17) << ' '<< "Welcome to Skill Based Job Recommendation System" << endl;
         cout << setfill('=') << setw(100) << "=" << endl;
         cout << setfill(' ');
         cout << "1. Register\n";
