@@ -64,3 +64,30 @@ A console-based C++ application that intelligently matches job seekers with rele
     <li><strong>Gap Detection:</strong> If missing skills are found, list them and suggest improvement.</li>
     <li><strong>Output:</strong> Display missing required skills and improvement suggestions.</li>
 </ul>
+
+<h2> Steps to Run the Program</h2>
+
+<h3> Compile the Code</h3>
+<ul>
+  <li><strong>Linux / macOS:</strong></li>
+  <pre><code>g++ -std=c++17 -Iinclude src/*.cpp main.cpp -o main</code></pre>
+
+  <li><strong>Windows (MinGW / g++):</strong></li>
+  <pre><code>g++ -std=c++17 -Iinclude src/*.cpp main.cpp -o main.exe</code></pre>
+</ul>
+
+<h3> Run the Executable</h3>
+<ul>
+  <li><strong>Linux / macOS:</strong></li>
+  <pre><code>./main</code></pre>
+
+  <li><strong>Windows:</strong></li>
+  <pre><code>.\main.exe</code></pre>
+</ul>
+
+<h3> Notes</h3>
+<ul>
+  <li>Make sure you are in the project root directory.</li>
+  <li>The <code>-Iinclude</code> flag specifies the header file directory.</li>
+  <li>All <code>.cpp</code> files inside <code>src/</code> are compiled together.</li>
+</ul>
