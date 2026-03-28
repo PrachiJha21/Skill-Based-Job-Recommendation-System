@@ -152,20 +152,29 @@ void Candidate::buildProfile() {
             break;
         }
         case 4: {
-            cout << "\n=== Your Profile ===\n";
+            cout << setfill('=') << setw(100) << "=" << endl;
+            cout << setfill(' ');   
+            cout << setw(38) <<" " << "Your Profile" << endl;
+            cout << setfill('=') << setw(100) << "=" << endl;
+            cout << setfill(' ');
+            cout << "Username: " << getUsername() << "\n"; 
             cout << "Interests: ";
             for (const auto& interest : interests) {
-                cout << interest << "; ";
+                cout << interest << "\n ";
             }
-            cout << "\n\nWork Experience:\n";
+            cout << setfill('-') << setw(100) << "-" << endl;
+            cout << "Work Experience:\n";
             for (const auto& exp : experience) {
                 cout << "- " << exp << "\n";
             }
-            cout << "\nEducation:\n";
+            cout << setfill('-') << setw(100) << "-" << endl;
+            cout << "Education:\n";
             for (const auto& edu : education) {
                 cout << "- " << edu << "\n";
             }
-            cout << "\nSkills:\n";
+            cout << setfill('-') << setw(100) << "-" << endl;
+            cout << setfill(' ');
+            cout << "Skills:\n";
             for (const auto& pair : skills) {
                 cout << "- " << pair.first << " (" << skillLevelToString(pair.second) << ")\n";
             }
