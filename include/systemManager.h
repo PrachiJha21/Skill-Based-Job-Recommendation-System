@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <vector>
 #include <string>
+#include <utility>
 
 /* ===== Forward Declarations ===== */
 class User;
@@ -75,11 +76,16 @@ public:
     const std::unordered_map<int, Job*>& getAllJobs() const;
 
     /* ===== Application Management ===== */
-    void submitApplication(int candidateId, int jobId, double matchScore);
+    void submitApplication(int candidateId, int jobId, double matchScore, const std::vector<std::string>& screeningAnswers = std::vector<std::string>());
     std::vector<Application*> getApplicationsForJob(int jobId) const;
 
     /* ===== Matching Coordination ===== */
     std::vector<int> getTopMatchingJobs(
+        const Candidate& candidate,
+        int topN = 5
+    );
+
+    std::vector<std::pair<int, double>> getTopMatchingJobsWithScores(
         const Candidate& candidate,
         int topN = 5
     );

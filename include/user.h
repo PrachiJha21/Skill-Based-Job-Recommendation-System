@@ -31,6 +31,7 @@ public:
 
     int getID() const { return id; }
     std::string getUsername() const { return username; }
+    std::string getEmail() const { return email; }
     std::string getRole() const { return role; }
 
     bool authenticate(const std::string& inputPassword) const {

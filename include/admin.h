@@ -12,16 +12,24 @@ class Employer;
 
 class Admin : public User {
 public:
+    // Hardcoded admin credentials
+    static const std::string ADMIN_EMAIL;
+    static const std::string ADMIN_PASSWORD;
+    static const std::string ADMIN_USERNAME;
+
     Admin(int id = 0,
           std::string username = "",
           std::string password = "",
           std::string email = "");
 
+    // Static validation method for admin authentication
+    static bool validateAdminCredentials(const std::string& email, const std::string& password);
+
     // Menu
     void displayMenu() override;
 
     // Admin actions
-    void approveJob(int jobID, std::unordered_set<int>& approvedJobs);
+    void removeJob(int jobID);
 
     void removeUser(const std::string& email,
                     std::unordered_map<std::string, Candidate*>& candidates,

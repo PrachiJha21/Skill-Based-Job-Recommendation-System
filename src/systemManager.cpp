@@ -7,6 +7,7 @@
 #include "job.h"
 #include "application.h"
 #include "matchingengine.h"
+#include <iomanip>
 
 #include <iostream>
 
@@ -54,7 +55,11 @@ void SystemManager::mainMenu() {
     int choice;
 
     do {
-        cout << "\n===== SKILL-BASED JOB MATCHING SYSTEM =====\n";
+        cout << setfill('=') << setw(100) << "=" << endl;
+        cout << setfill(' ');   // reset fill character 
+        cout << setw(17) << ' '<< "Welcome to Skill Based Job Recommendation System" << endl;
+        cout << setfill('=') << setw(100) << "=" << endl;
+        cout << setfill(' ');
         cout << "1. Register\n";
         cout << "2. Login\n";
         cout << "3. Exit\n";
@@ -83,7 +88,7 @@ void SystemManager::mainMenu() {
         default:
             cout << "Invalid choice.\n";
         }
-    } while (true);
+    } while (choice != 3);
 }
 
 /* =========================================================
@@ -94,10 +99,13 @@ void SystemManager::registerUser() {
     int roleChoice;
     string username, password, email;
 
-    cout << "\nRegister as:\n";
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
+    cout << setw(17) << "Register as: " << endl;
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');  
     cout << "1. Candidate\n";
     cout << "2. Employer\n";
-    cout << "3. Admin\n";
     cout << "Choice: ";
     cin >> roleChoice;
 
@@ -114,8 +122,7 @@ void SystemManager::registerUser() {
     
     // ✅ EMAIL UNIQUENESS CHECK
     if (candidates.count(email) ||
-        employers.count(email) ||
-        admins.count(email)) {
+        employers.count(email) ) {
 
         cout << "Error: This email is already registered.\n";
         return;
@@ -125,12 +132,13 @@ void SystemManager::registerUser() {
 
     if (roleChoice == 1) {
         candidates[email] = new Candidate(id, username, password, email);
+        cout << "Candidate registered successfully!\n";
+        saveData();  // Auto-save after registration
     }
     else if (roleChoice == 2) {
         employers[email] = new Employer(id, username, password, email);
-    }
-    else if (roleChoice == 3) {
-        admins[email] = new Admin(id, username, password, email);
+        cout << "Employer registered successfully!\n";
+        saveData();  // Auto-save after registration
     }
     else {
         cout << "Invalid role selection.\n";
@@ -138,30 +146,49 @@ void SystemManager::registerUser() {
     }
 
     cout << "Registration successful.\n";
+
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
 }
 
 User* SystemManager::loginUser() {
     string email, password;
+
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
 
     cout << "\nEmail: ";
     getline(cin>>ws, email);
     cout << "Password: ";
     password = getMaskedPassword();
 
+    // Check Candidate login
     if (candidates.count(email) &&
         candidates[email]->authenticate(password))
         return candidates[email];
 
+    // Check Employer login
     if (employers.count(email) &&
         employers[email]->authenticate(password))
         return employers[email];
 
-    if (admins.count(email) &&
-        admins[email]->authenticate(password))
+    // Check Admin login using hardcoded credentials
+    if (Admin::validateAdminCredentials(email, password)) {
+        // If admin doesn't exist in the map, create one
+        if (!admins.count(email)) {
+            int id = generateUserId();
+            admins[email] = new Admin(id, Admin::ADMIN_USERNAME, Admin::ADMIN_PASSWORD, email);
+        }
+        cout << "Admin access granted.\n";
         return admins[email];
+    }
 
     cout << "Invalid credentials.\n";
+    cout << setfill('=') << setw(100) << "=" << endl;
+    cout << setfill(' ');
     return nullptr;
+
+
 }
 
 /* =========================================================
@@ -211,11 +238,12 @@ bool SystemManager::removeJob(int jobId) {
    Application Management
    ========================================================= */
 
-void SystemManager::submitApplication(int candidateId, int jobId, double matchScore) {
+void SystemManager::submitApplication(int candidateId, int jobId, double matchScore, const std::vector<std::string>& screeningAnswers) {
     int appId = nextApplicationId++;
-    Application* app = new Application(appId, candidateId, jobId);
+    Application* app = new Application(appId, candidateId, jobId, screeningAnswers);
     applications.push_back(app);
     cout << "Application submitted successfully.\n";
+    saveData();  // Auto-save after application submission
 }
 
 
@@ -253,6 +281,24 @@ vector<int> SystemManager::getTopMatchingJobs(
     );
 }
 
+vector<pair<int, double>> SystemManager::getTopMatchingJobsWithScores(
+    const Candidate& candidate,
+    int topN
+) {
+    // Convert Job* map to Job map (MatchingEngine expects objects)
+    unordered_map<int, Job> jobObjects;
+
+    for (const auto& pair : jobs) {
+        jobObjects[pair.first] = *(pair.second);
+    }
+
+    return MatchingEngine::getTopMatchingJobsWithScores(
+        candidate,
+        jobObjects,
+        topN
+    );
+}
+
 vector<string> SystemManager::getSkillGap(
     const Candidate& candidate,
     int jobId
@@ -271,67 +317,120 @@ vector<string> SystemManager::getSkillGap(
    ========================================================= */
 
 void SystemManager::loadData() {
-    std::ifstream fin("usersdB.txt");
-
-    if (!fin.is_open()) {
-        std::cout << "No existing data found. Starting fresh.\n";
-        return;
-    }
-
-    // Clear existing in-memory data
     candidates.clear();
     employers.clear();
     admins.clear();
+    jobs.clear();
+    applications.clear();
+    approvedJobs.clear();
 
-    
-
-    while (true) {
-        int id;
-        std::string username, role, email;
-        size_t passwordHash;
-
-        fin >> id >> username >> passwordHash >> role >> email;
-
-        if (role == "candidate") {
-            Candidate* c = new Candidate(id, username, "", email);
-            c->loadFromFile(fin);
-            candidates[email] = c;
+    // Load candidate data
+    {
+        std::ifstream fin("candidateDB.csv");
+        if (fin.is_open()) {
+            std::string line;
+            while (std::getline(fin, line)) {
+                if (line.empty()) continue;
+                Candidate* c = new Candidate();
+                c->fromCSV(line);
+                candidates[c->getEmail()] = c;
+                nextUserId = std::max(nextUserId, c->getID() + 1);
+            }
+            fin.close();
         }
-        else if (role == "employer") {
-            Employer* e = new Employer(id, username, "", email);
-            e->loadFromFile(fin);
-            employers[email] = e;
-        }
-        else if (role == "admin") {
-            Admin* a = new Admin(id, username, "", email);
-            a->loadFromFile(fin);
-            admins[email] = a;
-        }
-
-        // Make sure future IDs don't collide
-        nextUserId = std::max(nextUserId, id + 1);
     }
 
-    fin.close();
+    // Load employer data
+    {
+        std::ifstream fin("employerDB.csv");
+        if (fin.is_open()) {
+            std::string line;
+            while (std::getline(fin, line)) {
+                if (line.empty()) continue;
+                Employer* e = new Employer();
+                e->fromCSV(line);
+                std::string email = e->getEmail();
+                if (!email.empty() && !employers.count(email)) {
+                    employers[email] = e;
+                    nextUserId = std::max(nextUserId, e->getID() + 1);
+                } else {
+                    delete e;
+                }
+            }
+            fin.close();
+        }
+    }
+
+    // Load job data
+    {
+        std::ifstream fin("jobDB.csv");
+        if (fin.is_open()) {
+            std::string line;
+            while (std::getline(fin, line)) {
+                if (line.empty()) continue;
+                Job* j = new Job();
+                j->fromCSV(line);
+                jobs[j->getID()] = j;
+                approvedJobs.insert(j->getID());
+                nextJobId = std::max(nextJobId, j->getID() + 1);
+            }
+            fin.close();
+        }
+    }
+
+    // Load application data
+    {
+        std::ifstream fin("applicationDB.csv");
+        if (fin.is_open()) {
+            std::string line;
+            while (std::getline(fin, line)) {
+                if (line.empty()) continue;
+                Application* a = new Application();
+                a->fromCSV(line);
+                applications.push_back(a);
+                nextApplicationId = std::max(nextApplicationId, a->getApplicationId() + 1);
+            }
+            fin.close();
+        }
+    }
+
     std::cout << "System data loaded successfully.\n";
 }
 
 void SystemManager::saveData() {
-    std::ofstream fout("usersdB.txt");
-
-    for (auto& [email, candidate] : candidates) {
-        candidate->saveToFile(fout);
+    {
+        std::ofstream fout("candidateDB.csv");
+        for (auto& [email, candidate] : candidates) {
+            fout << candidate->toCSV() << "\n";
+        }
+        fout.close();
     }
 
-    for (auto& [email, employer] : employers) {
-        employer->saveToFile(fout);
+    {
+        std::ofstream fout("employerDB.csv");
+        for (auto& [email, employer] : employers) {
+            fout << employer->toCSV() << "\n";
+        }
+        fout.close();
     }
 
-    for (auto& [email, admin] : admins) {
-        admin->saveToFile(fout);
+    {
+        std::ofstream fout("jobDB.csv");
+        for (auto& [id, job] : jobs) {
+            fout << job->toCSV() << "\n";
+        }
+        fout.close();
     }
 
-    fout.close();
+    {
+        std::ofstream fout("applicationDB.csv");
+        for (Application* app : applications) {
+            fout << app->toCSV() << "\n";
+        }
+        fout.close();
+    }
+
+    // Admin is static user; no CSV persistence needed for hardcoded admin user.
 }
 
 /* =========================================================

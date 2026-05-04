@@ -33,6 +33,10 @@ public:
     /* ===== Menu ===== */
     void displayMenu() override;
 
+    /* ===== CSV Persistence ===== */
+    std::string toCSV() const;
+    void fromCSV(const std::string& csvLine);
+
     /* ===== File Handling ===== */
     void saveToFile(std::ofstream& out) const override;
     void loadFromFile(std::ifstream& in) override;

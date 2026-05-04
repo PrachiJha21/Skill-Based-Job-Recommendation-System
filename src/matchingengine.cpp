@@ -82,6 +82,38 @@ std::vector<int> MatchingEngine::getTopMatchingJobs(
 }
 
 /*
+ * Returns the top N matching jobs with their scores for a candidate.
+ * Jobs are ranked by match score (descending).
+ */
+std::vector<std::pair<int, double>> MatchingEngine::getTopMatchingJobsWithScores(
+    const Candidate& candidate,
+    const std::unordered_map<int, Job>& jobs,
+    int topN
+) {
+    std::vector<std::pair<int, double>> scoredJobs;
+
+    // Calculate score for each job
+    for (const auto& [jobId, job] : jobs) {
+        double score = calculateMatchScore(candidate, job);
+        scoredJobs.emplace_back(jobId, score);
+    }
+
+    // Sort jobs by score (highest first)
+    std::sort(scoredJobs.begin(), scoredJobs.end(),
+              [](const auto& a, const auto& b) {
+                  return a.second > b.second;
+              });
+
+    // Return top N job ID and score pairs
+    std::vector<std::pair<int, double>> topJobsWithScores;
+    for (int i = 0; i < topN && i < static_cast<int>(scoredJobs.size()); ++i) {
+        topJobsWithScores.push_back(scoredJobs[i]);
+    }
+
+    return topJobsWithScores;
+}
+
+/*
  * Returns the list of skills the candidate is missing
  * for a given job.
  */

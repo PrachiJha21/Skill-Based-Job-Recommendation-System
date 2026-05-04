@@ -4,6 +4,7 @@
 #include <string>
 #include <ctime>
 #include <fstream>
+#include <vector>
 
 /*
  Application
@@ -27,6 +28,7 @@ private:
     ApplicationStatus status;   // Current status of application
     std::time_t appliedDate;    // When application was created
     std::time_t updatedDate;    // Last status update time
+    std::vector<std::string> screeningAnswers;  // Answers to screening questions
 
 public:
     /* =========================
@@ -38,7 +40,8 @@ public:
     Application(
         int applicationId,
         int candidateId,
-        int jobId
+        int jobId,
+        const std::vector<std::string>& screeningAnswers = std::vector<std::string>()
     );
 
     /* =========================
@@ -51,6 +54,7 @@ public:
     ApplicationStatus getStatus() const;
     std::time_t getAppliedDate() const;
     std::time_t getUpdatedDate() const;
+    const std::vector<std::string>& getScreeningAnswers() const;
 
     /* =========================
        Status Management
@@ -59,8 +63,11 @@ public:
     void updateStatus(ApplicationStatus newStatus);
 
     /* =========================
-       Persistence (applicationDB.txt)
+       Persistence (applicationDB.csv)
        ========================= */
+
+    std::string toCSV() const;
+    void fromCSV(const std::string& csvLine);
 
     void saveToFile(std::ofstream& out) const;
     void loadFromFile(std::ifstream& in);
