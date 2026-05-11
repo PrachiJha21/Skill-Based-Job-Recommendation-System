@@ -44,7 +44,7 @@ void Employer::postJob() {
     printLine('=');
 
     // Basic Information
-    string title, description;
+    string title, description, companyName;
     cout << "Job Title: ";
     getline(cin >> ws, title);
     job->setTitle(title);
@@ -53,6 +53,8 @@ void Employer::postJob() {
     getline(cin >> ws, description);
     job->setDescription(description);
 
+    cout << "Company Name: ";
+    getline(cin >> ws, companyName);
     job->setCompanyName(companyName);
 
     string location;
@@ -143,7 +145,7 @@ void Employer::postJob() {
     postedJobIDs.push_back(jobId);
 
     SetConsoleTextAttribute(h, 10);
-    cout << "\n Job posted successfully with ID " << jobId << "!\n";
+    centerText("Job posted successfully with JobID =" + to_string(jobId));
     SetConsoleTextAttribute(h, 7);
     system.saveData();  // Auto-save after job posting
 }
@@ -158,7 +160,9 @@ void Employer::editJob(int jobId) {
     Job* job = system.getJobById(jobId);
 
     if (!job) {
+        SetConsoleTextAttribute(h, 12);
         centerText("Job not found!");
+        SetConsoleTextAttribute(h, 7);
         return;
     }
 
@@ -166,11 +170,8 @@ void Employer::editJob(int jobId) {
     cout << "Enter new job title: ";
     getline(cin >> ws, newTitle);
     job->setTitle(newTitle);
-
     printLine('-');
-    centerText("Skills");
-    printLine('-');
-    cout << "Clear and re‑enter skills? (y/n): ";
+    cout << "Clear and enter skills once again? (y/n): ";
     char choice;
     cin >> choice;
 
@@ -189,7 +190,9 @@ void Employer::editJob(int jobId) {
         }
     }
 
-    cout << "Job updated successfully.\n";
+    SetConsoleTextAttribute(h, 10);
+    centerText("Job updated successfully.");
+    SetConsoleTextAttribute(h, 7);
 }
 
 
@@ -201,7 +204,9 @@ void Employer::deleteJob(int jobId) {
     SystemManager& system = SystemManager::getInstance();
 
     if (!system.removeJob(jobId)) {
+        SetConsoleTextAttribute(h, 12);
         centerText("Job not found or could not be deleted.");
+        SetConsoleTextAttribute(h, 7);
         return;
     }
 
@@ -210,7 +215,9 @@ void Employer::deleteJob(int jobId) {
         postedJobIDs.end()
     );
 
+    SetConsoleTextAttribute(h, 10);
     centerText("Job deleted successfully.");
+    SetConsoleTextAttribute(h, 7);
 }
 
 
