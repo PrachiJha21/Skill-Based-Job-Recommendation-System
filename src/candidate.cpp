@@ -266,7 +266,11 @@ void Candidate::applyForJob(int jobId) {
     // Check if already applied
     for (int appliedId : appliedJobIDs) {
         if (appliedId == jobId) {
-            cout << "You have already applied for this job.\n";
+            printLine('.');
+            SetConsoleTextAttribute(h, 12);
+            centerText("You have already applied for this job.");
+            SetConsoleTextAttribute(h, 7);
+            printLine('.');
             return;
         }
     }
@@ -326,11 +330,11 @@ void Candidate::displayMenu() {
 
     do {
         printLine('=');
-        SetConsoleTextAttribute(h, 3);
+        SetConsoleTextAttribute(h, 10);
         centerText("Candidate Dashboard");
         SetConsoleTextAttribute(h, 7);
         printLine('=');
-        SetConsoleTextAttribute(h, 6);
+        SetConsoleTextAttribute(h, 3);
         cout << "1. Add/Update Skill with Level\n";
         cout << "2. Remove Skill\n";
         cout << "3. Build Profile (Interests/Experience/Project/Education)\n";
@@ -352,7 +356,7 @@ void Candidate::displayMenu() {
             getline(cin >> ws, skill);
             
             printLine('-');
-            SetConsoleTextAttribute(h, 6);
+            SetConsoleTextAttribute(h, 3);
             cout << "Select skill level:\n";
             cout << "1. Beginner\n";
             cout << "2. Intermediate\n";
@@ -396,16 +400,17 @@ void Candidate::displayMenu() {
                 .getTopMatchingJobsWithScores(*this);
 
             if (matches.empty()) {
-
+                SetConsoleTextAttribute(h, 12);
                 centerText(
                     "No matching jobs found. "
                     "Try building your profile or adding more skills."
                 );
+                SetConsoleTextAttribute(h, 7);
 
             } else {
-
+                SetConsoleTextAttribute(h, 10);
                 centerText("Top Matching Jobs");
-
+                SetConsoleTextAttribute(h, 7);
                 bool foundValidMatch = false;
 
                 for (const auto& match : matches) {
@@ -468,7 +473,9 @@ void Candidate::displayMenu() {
             } else {
 
                 printLine('#');
+                SetConsoleTextAttribute(h, 10);
                 centerText("All Available Jobs");
+                SetConsoleTextAttribute(h, 7);
                 printLine('#');
 
                 bool foundValidJob = false;
@@ -499,7 +506,9 @@ void Candidate::displayMenu() {
                 }
 
                 if (!foundValidJob) {
-                    cout << "No valid jobs available.\n";
+                    SetConsoleTextAttribute(h, 12);
+                    centerText("No valid jobs found.");
+                    SetConsoleTextAttribute(h, 7);
                 }
             }
             break;
@@ -522,11 +531,15 @@ void Candidate::displayMenu() {
         }
 
         case 9:
-            cout << "Logging out...\n";
+            SetConsoleTextAttribute(h, 14);
+            centerText("Logging out...");
+            SetConsoleTextAttribute(h, 7);
             break;
 
         default:
-            cout << "Invalid choice.\n";
+            SetConsoleTextAttribute(h, 12);
+            centerText("Invalid choice. Please try again.");
+            SetConsoleTextAttribute(h, 7);
         }
 
     } while (choice != 9);  //  SESSION ENDS ONLY ON LOGOUT

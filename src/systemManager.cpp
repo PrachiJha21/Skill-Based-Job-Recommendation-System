@@ -157,7 +157,7 @@ void SystemManager::registerUser() {
         SetConsoleTextAttribute(h, 7);
         return;
     }
-    cout << "Password: ";
+    cout << "Password(minimum 8 characters): ";
     password = getMaskedPassword();
 
     
@@ -173,20 +173,28 @@ void SystemManager::registerUser() {
 
     if (roleChoice == 1) {
         candidates[email] = new Candidate(id, username, password, email);
+        printLine('.');
+        SetConsoleTextAttribute(h, 10);
         cout << "Candidate " << username<<"(" << email << ")" << " registered successfully!\n";
+        SetConsoleTextAttribute(h, 7);
+        printLine('.');
         saveData();  // Auto-save after registration
     }
     else if (roleChoice == 2) {
         employers[email] = new Employer(id, username, password, email);
+        printLine('.');
+        SetConsoleTextAttribute(h, 10);
         cout << "Employer " << username << "(" << email << ")" << " registered successfully!\n";
+        SetConsoleTextAttribute(h, 7);
+        printLine('.');
         saveData();  // Auto-save after registration
     }
     else {
+        SetConsoleTextAttribute(h, 12);
         cout << "Invalid role selection.\n";
+        SetConsoleTextAttribute(h, 7);
         return;
     }
-
-    cout << "Registration successful.\n";
 
     printLine('=');
 }
@@ -209,15 +217,23 @@ User* SystemManager::loginUser() {
     if (candidates.count(email) &&
         candidates[email]->authenticate(password)){
         return candidates[email];
+        SetConsoleTextAttribute(h, 10);
         printLine(':');
         cout << candidates[email]->getUsername() << " logged in successfully!\n";
         printLine(':');
+        SetConsoleTextAttribute(h, 7);
         }
 
     // Check Employer login
     if (employers.count(email) &&
-        employers[email]->authenticate(password))
+        employers[email]->authenticate(password)){
         return employers[email];
+        SetConsoleTextAttribute(h, 10);
+        printLine(':');
+        cout << employers[email]->getUsername() << " logged in successfully!\n";
+        SetConsoleTextAttribute(h, 7);
+        printLine(':');
+        }
 
     // Check Admin login using hardcoded credentials
     if (Admin::validateAdminCredentials(email, password)) {
@@ -290,7 +306,9 @@ void SystemManager::submitApplication(int candidateId, int jobId, double matchSc
     int appId = nextApplicationId++;
     Application* app = new Application(appId, candidateId, jobId, screeningAnswers);
     applications.push_back(app);
-    cout << "Application submitted successfully.\n";
+    SetConsoleTextAttribute(h, 10);
+    centerText("Application submitted successfully with Application ID: " + to_string(appId));
+    SetConsoleTextAttribute(h, 7);
     saveData();  // Auto-save after application submission
 }
 
@@ -497,9 +515,7 @@ void SystemManager::saveData() {
     // Admin is static user; no CSV persistence needed for hardcoded admin user.
 }
 
-/* =========================================================
-   ID Generation
-   ========================================================= */
+//ID Generation
 
 int SystemManager::generateUserId() {
     return nextUserId++;

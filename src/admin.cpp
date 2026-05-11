@@ -38,11 +38,11 @@ void Admin::displayMenu() {
 
     do {
         printLine('=');
-        SetConsoleTextAttribute(h, 3);
+        SetConsoleTextAttribute(h, 10);
         centerText("Admin Dashboard");
         SetConsoleTextAttribute(h, 7);
         printLine('=');
-        SetConsoleTextAttribute(h, 5);
+        SetConsoleTextAttribute(h, 3);
         cout << "1. Remove Job (Scam Report)\n";
         cout << "2. Remove User\n";
         cout << "3. System Statistics\n";

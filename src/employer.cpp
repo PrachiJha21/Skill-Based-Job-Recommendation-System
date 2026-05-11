@@ -337,11 +337,11 @@ void Employer::displayMenu() {
 
     do {
         printLine('=');
-        SetConsoleTextAttribute(h, 3);
+        SetConsoleTextAttribute(h, 10);
         centerText("Employer Dashboard");
         SetConsoleTextAttribute(h, 7);
         printLine('=');
-        SetConsoleTextAttribute(h, 5);
+        SetConsoleTextAttribute(h, 3);
         cout << "1. Post Job\n";
         cout << "2. Edit Job\n";
         cout << "3. Delete Job\n";
@@ -381,11 +381,15 @@ void Employer::displayMenu() {
         }
 
         case 5:
-            cout << "Logging out...\n";
+            SetConsoleTextAttribute(h, 14);
+            centerText("Logging out...");
+            SetConsoleTextAttribute(h, 7);
             break;
 
         default:
-            cout << "Invalid choice. Try again.\n";
+            SetConsoleTextAttribute(h, 12);
+            centerText("Invalid choice. Please try again.");
+            SetConsoleTextAttribute(h, 7);
         }
 
     } while (choice != 5);
