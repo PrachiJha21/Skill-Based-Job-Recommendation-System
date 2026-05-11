@@ -111,6 +111,8 @@ const vector<string>& Candidate::getEducation() const {
     return education;
 }
 
+
+
 /* =========================================================
    Profile Building
    ========================================================= */
@@ -172,24 +174,22 @@ void Candidate::buildProfile() {
         }
         case 5: {
             printLine('*');
-            centerText("Your Profile");
+            centerText("Candidate" + std::to_string(id) + " Profile");
             printLine('*');
-            cout << "Username: " << getUsername() << "\n"; 
-            cout << "Interests: ";
+            cout << "Username: " << getUsername() << "\n";
+            cout << "Email: " << getEmail() << "\n";
+            cout << "Interests:\n";
             for (const auto& interest : interests) {
-                cout << interest << "\n ";
+                cout << "- " << interest << "\n";
             }
-            printLine('-');
-            cout << "Work Experience:\n";
+            cout << "Experience:\n";
             for (const auto& exp : experience) {
                 cout << "- " << exp << "\n";
             }
-            printLine('-');
             cout << "Education:\n";
             for (const auto& edu : education) {
                 cout << "- " << edu << "\n";
             }
-            printLine('-');
             cout << "Skills:\n";
             for (const auto& pair : skills) {
                 cout << "- " << pair.first << " (" << skillLevelToString(pair.second) << ")\n";
@@ -208,6 +208,8 @@ void Candidate::buildProfile() {
         }
     } while (choice != 6);
 }
+
+
 
 void Candidate::addInterest(const string& interest) {
     interests.push_back(interest);

@@ -78,6 +78,7 @@ public:
     /* ===== Application Management ===== */
     void submitApplication(int candidateId, int jobId, double matchScore, const std::vector<std::string>& screeningAnswers = std::vector<std::string>());
     std::vector<Application*> getApplicationsForJob(int jobId) const;
+    Candidate* findCandidateById(int id);
 
     /* ===== Matching Coordination ===== */
     std::vector<int> getTopMatchingJobs(

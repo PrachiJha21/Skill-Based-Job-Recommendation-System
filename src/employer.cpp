@@ -2,7 +2,7 @@
 #include "systemManager.h"
 #include "job.h"
 #include "application.h"
-
+#include "candidate.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -232,18 +232,78 @@ void Employer::viewApplicants(int jobId) const {
     printLine('-');
 
     for (const Application* app : apps) {
+
+        // Get candidate using candidate ID
+        Candidate* candidate =
+            system.findCandidateById(app->getCandidateId());
+
+        if (candidate == nullptr) {
+            continue;
+        }
+
         printLine('-');
-        cout << "Candidate ID: " << app->getCandidateId()
-             << " | Status: "
+
+        // Display full profile
+        cout << "Candidate ID: " << candidate->getID() << "\n";
+        cout << "Name: " << candidate->getUsername() << "\n";
+        cout << "Email: " << candidate->getEmail() << "\n";
+        
+        //Skill Printing
+        cout << "Skills:\n";
+
+        for (const auto& skillPair : candidate->getSkills()) {
+            cout << "- " << skillPair.first << " : ";
+            switch (skillPair.second) {
+                case SkillLevel::Beginner:
+                    cout << "Beginner";
+                    break;
+
+                case SkillLevel::Intermediate:
+                    cout << "Intermediate";
+                    break;
+
+                case SkillLevel::Expert:
+                    cout << "Expert";
+                    break;
+            }
+            cout << "\n";
+        }
+
+        //Education Printing
+
+        cout << "\nEducation:\n";
+
+        for (const string& edu : candidate->getEducation()) {
+            cout << "- " << edu << "\n";
+        }
+        
+        //Experience Printing
+
+        cout << "\nExperience:\n";
+
+        for (const string& exp : candidate->getExperience()) {
+            cout << "- " << exp << "\n";
+        }
+
+
+        // Application info
+        cout << "Application Status: "
              << Application::statusToString(app->getStatus())
              << "\n";
-        const auto& answers = app->getScreeningAnswers();
+
+        // Screening answers
+        vector<string> answers = app->getScreeningAnswers();
+
         if (!answers.empty()) {
-            cout << "Screening Answers:\n";
+            cout << "\nScreening Answers:\n";
+
             for (size_t i = 0; i < answers.size(); ++i) {
-                cout << "Q" << (i + 1) << ": " << answers[i] << "\n";
+                cout << "Q" << (i + 1)
+                     << ": " << answers[i] << "\n";
             }
         }
+
+        printLine('-');
     }
 }
 

@@ -306,6 +306,22 @@ vector<Application*> SystemManager::getApplicationsForJob(int jobId) {
     return result;
 }
 
+// Helper to find candidate by ID (used in employer view applicants)
+
+Candidate* SystemManager::findCandidateById(int id) {
+
+    for (auto& pair : candidates) {
+
+        Candidate* c = pair.second;
+
+        if (c->getID() == id) {
+            return c;
+        }
+    }
+
+    return nullptr;
+}
+
 
 /* =========================================================
    Matching Coordination
