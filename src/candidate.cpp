@@ -2,6 +2,7 @@
 #include "systemManager.h"
 #include "matchingengine.h"
 #include "job.h"
+#include "utils.h"
 
 #include <iostream>
 #include <sstream>
@@ -117,17 +118,20 @@ const vector<string>& Candidate::getEducation() const {
 void Candidate::buildProfile() {
     int choice;
     do {
-        cout << setfill('=') << setw(100) << "=" << endl;
-        cout << setfill(' ');   
-        cout << setw(38) <<" " << "Build Your Profile" << endl;
-        cout << setfill('=') << setw(100) << "=" << endl; 
+        printLine('*');  
+        centerText("Build Your Profile");
+        printLine('*');
+
+        SetConsoleTextAttribute(h, 5);
         cout << "1. Add Interest\n";
         cout << "2. Add Work Experience\n";
         cout << "3. Add Education\n";
-        cout << "4. View Current Profile\n";
-        cout << "5. Back to Main Menu\n";
+        cout << "4. Add Projects\n";
+        cout << "5. View Current Profile\n";
+        cout << "6. Back to Main Menu\n";
         cout << "Choice: ";
         cin >> choice;
+        SetConsoleTextAttribute(h, 7);
 
         switch (choice) {
         case 1: {
@@ -152,17 +156,22 @@ void Candidate::buildProfile() {
             break;
         }
         case 4: {
-            cout << setfill('=') << setw(100) << "=" << endl;
-            cout << setfill(' ');   
-            cout << setw(38) <<" " << "Your Profile" << endl;
-            cout << setfill('=') << setw(100) << "=" << endl;
-            cout << setfill(' ');
+            string project;
+            cout << "Enter project details (e.g., 'Personal Portfolio Website, 2021'): ";
+            getline(cin >> ws, project);
+            addExperience(project);  // Treat projects as experience for simplicity
+            break;
+        }
+        case 5: {
+            printLine('*');
+            centerText("Your Profile");
+            printLine('*');
             cout << "Username: " << getUsername() << "\n"; 
             cout << "Interests: ";
             for (const auto& interest : interests) {
                 cout << interest << "\n ";
             }
-            cout << setfill('-') << setw(100) << "-" << endl;
+            printLine('-');
             cout << "Work Experience:\n";
             for (const auto& exp : experience) {
                 cout << "- " << exp << "\n";
@@ -172,21 +181,20 @@ void Candidate::buildProfile() {
             for (const auto& edu : education) {
                 cout << "- " << edu << "\n";
             }
-            cout << setfill('-') << setw(100) << "-" << endl;
-            cout << setfill(' ');
+            printLine('-');
             cout << "Skills:\n";
             for (const auto& pair : skills) {
                 cout << "- " << pair.first << " (" << skillLevelToString(pair.second) << ")\n";
             }
             break;
         }
-        case 5:
+        case 6:
             cout << "Returning to main menu...\n";
             break;
         default:
             cout << "Invalid choice.\n";
         }
-    } while (choice != 5);
+    } while (choice != 6);
 }
 
 void Candidate::addInterest(const string& interest) {
@@ -293,11 +301,9 @@ void Candidate::displayMenu() {
     int choice;
 
     do {
-        cout << setfill('=') << setw(100) << "=" << endl;
-        cout << setfill(' ');   // reset fill character
-        cout << setw(40) <<" " << "Candidate Dashboard" << endl;
-        cout << setfill('=') << setw(100) << "=" << endl;
-        cout << setfill(' ');
+        printLine('=');
+        centerText("Candidate Dashboard");
+        printLine('=');
         cout << "1. Add/Update Skill with Level\n";
         cout << "2. Remove Skill\n";
         cout << "3. Build Profile (Interests/Experience/Education)\n";
@@ -317,6 +323,7 @@ void Candidate::displayMenu() {
             cout << "Enter skill: ";
             getline(cin >> ws, skill);
             
+            printLine('-');
             cout << "Select skill level:\n";
             cout << "1. Beginner\n";
             cout << "2. Intermediate\n";
@@ -368,7 +375,7 @@ void Candidate::displayMenu() {
                     if (job) {
                         cout << "Match Score: " << fixed << setprecision(1) << score << "%\n";
                         job->displayJobDetails();
-                        cout << "----------------------------------------\n";
+                        printLine('-');
                     }
                 }
             }
@@ -380,10 +387,12 @@ void Candidate::displayMenu() {
             if (allJobs.empty()) {
                 cout << "No jobs available.\n";
             } else {
-                cout << "\n=== All Available Jobs ===\n";
+                printLine('#');
+                centerText("All Available Jobs");
+                printLine('#');
                 for (const auto& pair : allJobs) {
                     pair.second->displayJobDetails();
-                    cout << "----------------------------------------\n";
+                    printLine('-');
                 }
             }
             break;
@@ -413,7 +422,7 @@ void Candidate::displayMenu() {
             cout << "Invalid choice.\n";
         }
 
-    } while (choice != 9);  // ✅ SESSION ENDS ONLY ON LOGOUT
+    } while (choice != 9);  //  SESSION ENDS ONLY ON LOGOUT
 }
 
 /* =========================================================

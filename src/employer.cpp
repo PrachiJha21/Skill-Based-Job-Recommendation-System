@@ -131,7 +131,7 @@ void Employer::postJob() {
     system.addJob(job);
     postedJobIDs.push_back(jobId);
 
-    cout << "\n✅ Job posted successfully with ID " << jobId << "!\n";
+    cout << "\n 🎉 Job posted successfully with ID " << jobId << "!\n";
     system.saveData();  // Auto-save after job posting
 }
 

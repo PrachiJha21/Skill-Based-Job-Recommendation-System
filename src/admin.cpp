@@ -8,16 +8,15 @@
 
 using namespace std;
 
-// ============================
 // Static Admin Credentials
-// ============================
+
 const std::string Admin::ADMIN_EMAIL = "admin@jobrecommendation.com";
 const std::string Admin::ADMIN_PASSWORD = "Admin@Secure123";
 const std::string Admin::ADMIN_USERNAME = "Administrator";
 
-// ============================
+
 // Admin Authentication
-// ============================
+
 bool Admin::validateAdminCredentials(const std::string& email, const std::string& password) {
     return (email == ADMIN_EMAIL && password == ADMIN_PASSWORD);
 }
@@ -30,9 +29,9 @@ Admin::Admin(int id,
     : User(id, username, password, "admin", email) {}
 
 
-// ============================
+
 // Admin Menu
-// ============================
+
 void Admin::displayMenu() {
     int choice;
 
@@ -98,9 +97,9 @@ void Admin::displayMenu() {
 }
 
 
-// ============================
+
 // Remove Job (Scam Report)
-// ============================
+
 void Admin::removeJob(int jobID) {
     if (SystemManager::getInstance().removeJob(jobID)) {
         cout << "Job removed successfully due to scam report.\n";

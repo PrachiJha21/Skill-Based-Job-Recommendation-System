@@ -8,8 +8,9 @@
 #include "application.h"
 #include "matchingengine.h"
 #include <iomanip>
-
+#include <windows.h>
 #include <iostream>
+#include "utils.h"
 
 using namespace std;
 
@@ -19,17 +20,43 @@ std::string getMaskedPassword() {
     std::string password;
     char ch;
 
-    while ((ch = _getch()) != '\r') {  // Enter key
-        if (ch == '\b') {              // Backspace
+    while (true) {
+
+        ch = _getch();
+
+        // Enter key
+        if (ch == '\r') {
+
+            if (password.length() < 8) {
+                SetConsoleTextAttribute(h, 12);
+
+                std::cout << "\nPassword must be at least 8 characters long.\n";
+                std::cout << "Re-enter password: ";
+
+                SetConsoleTextAttribute(h, 7);
+
+                password.clear();
+            }
+            else {
+                break;
+            }
+        }
+
+        // Backspace
+        else if (ch == '\b') {
             if (!password.empty()) {
                 password.pop_back();
                 std::cout << "\b \b";
             }
-        } else {
+        }
+
+        // Normal character
+        else {
             password.push_back(ch);
             std::cout << '*';
         }
     }
+
     std::cout << std::endl;
     return password;
 }
@@ -55,14 +82,15 @@ void SystemManager::mainMenu() {
     int choice;
 
     do {
-        cout << setfill('=') << setw(100) << "=" << endl;
-        cout << setfill(' ');   // reset fill character 
-        cout << setw(17) << ' '<< "Welcome to Skill Based Job Recommendation System" << endl;
-        cout << setfill('=') << setw(100) << "=" << endl;
-        cout << setfill(' ');
+        printLine('=');
+        SetConsoleTextAttribute(h, 2);
+        centerText("Welcome to Skill Based Job Recommendation System");
+        SetConsoleTextAttribute(h, 7);
+        printLine('=');
         cout << "1. Register\n";
         cout << "2. Login\n";
         cout << "3. Exit\n";
+        printLine('=');
         cout << "Choice: ";
         cin >> choice;
 
@@ -81,14 +109,16 @@ void SystemManager::mainMenu() {
 
         case 3:
             saveData();
+            SetConsoleTextAttribute(h, 14);
             cout << "Exiting system...\n";
+            SetConsoleTextAttribute(h, 7);
             return;
             //break;
 
         default:
             cout << "Invalid choice.\n";
         }
-    } while (choice != 3);
+    } while (true);
 }
 
 /* =========================================================
@@ -99,14 +129,18 @@ void SystemManager::registerUser() {
     int roleChoice;
     string username, password, email;
 
-    cout << setfill('=') << setw(100) << "=" << endl;
-    cout << setfill(' ');
-    cout << setw(17) << "Register as: " << endl;
-    cout << setfill('=') << setw(100) << "=" << endl;
-    cout << setfill(' ');  
+    printLine('=');
+    SetConsoleTextAttribute(h, 2);
+    centerText("Register as: ");
+    SetConsoleTextAttribute(h, 7);
+    printLine('='); 
+
+    SetConsoleTextAttribute(h, 13);
     cout << "1. Candidate\n";
     cout << "2. Employer\n";
     cout << "Choice: ";
+
+    SetConsoleTextAttribute(h, 7);
     cin >> roleChoice;
 
     // cin>> ws; // Clear input buffer before getline
@@ -115,12 +149,19 @@ void SystemManager::registerUser() {
     getline(cin>>ws, username);
     cout << "Email: ";
     getline(cin>>ws, email);
-   
+    if (!isValidEmail(email)) {
+        SetConsoleTextAttribute(h, 12);
+
+        cout << "Invalid email format.\n";
+
+        SetConsoleTextAttribute(h, 7);
+        return;
+    }
     cout << "Password: ";
     password = getMaskedPassword();
 
     
-    // ✅ EMAIL UNIQUENESS CHECK
+    // EMAIL UNIQUENESS CHECK
     if (candidates.count(email) ||
         employers.count(email) ) {
 
@@ -132,12 +173,12 @@ void SystemManager::registerUser() {
 
     if (roleChoice == 1) {
         candidates[email] = new Candidate(id, username, password, email);
-        cout << "Candidate registered successfully!\n";
+        cout << "Candidate " << username<<"(" << email << ")" << " registered successfully!\n";
         saveData();  // Auto-save after registration
     }
     else if (roleChoice == 2) {
         employers[email] = new Employer(id, username, password, email);
-        cout << "Employer registered successfully!\n";
+        cout << "Employer " << username << "(" << email << ")" << " registered successfully!\n";
         saveData();  // Auto-save after registration
     }
     else {
@@ -147,15 +188,13 @@ void SystemManager::registerUser() {
 
     cout << "Registration successful.\n";
 
-    cout << setfill('=') << setw(100) << "=" << endl;
-    cout << setfill(' ');
+    printLine('=');
 }
 
 User* SystemManager::loginUser() {
     string email, password;
 
-    cout << setfill('=') << setw(100) << "=" << endl;
-    cout << setfill(' ');
+    printLine('=');
 
     cout << "\nEmail: ";
     getline(cin>>ws, email);
@@ -182,10 +221,9 @@ User* SystemManager::loginUser() {
         cout << "Admin access granted.\n";
         return admins[email];
     }
-
-    cout << "Invalid credentials.\n";
-    cout << setfill('=') << setw(100) << "=" << endl;
-    cout << setfill(' ');
+    printLine('=');
+    centerText("Invalid credentials.");
+    printLine('=');
     return nullptr;
 
 
