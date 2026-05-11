@@ -136,30 +136,38 @@ void Candidate::buildProfile() {
         switch (choice) {
         case 1: {
             string interest;
+            printLine('-');
             cout << "Enter your interest: ";
             getline(cin >> ws, interest);
             addInterest(interest);
+            printLine('-');
             break;
         }
         case 2: {
             string exp;
+            printLine('-');
             cout << "Enter work experience (e.g., 'Software Engineer at XYZ Corp, 2020-2023'): ";
             getline(cin >> ws, exp);
             addExperience(exp);
+            printLine('-');
             break;
         }
         case 3: {
             string edu;
+            printLine('-');
             cout << "Enter education (e.g., 'Bachelor of Computer Science, University ABC, 2016-2020'): ";
             getline(cin >> ws, edu);
             addEducation(edu);
+            printLine('-');
             break;
         }
         case 4: {
             string project;
+            printLine('-');
             cout << "Enter project details (e.g., 'Personal Portfolio Website, 2021'): ";
             getline(cin >> ws, project);
             addExperience(project);  // Treat projects as experience for simplicity
+            printLine('-');
             break;
         }
         case 5: {
@@ -176,7 +184,7 @@ void Candidate::buildProfile() {
             for (const auto& exp : experience) {
                 cout << "- " << exp << "\n";
             }
-            cout << setfill('-') << setw(100) << "-" << endl;
+            printLine('-');
             cout << "Education:\n";
             for (const auto& edu : education) {
                 cout << "- " << edu << "\n";
@@ -189,27 +197,37 @@ void Candidate::buildProfile() {
             break;
         }
         case 6:
-            cout << "Returning to main menu...\n";
+            SetConsoleTextAttribute(h, 14);
+            centerText("Returning to Main Menu...");
+            SetConsoleTextAttribute(h, 7);
             break;
         default:
-            cout << "Invalid choice.\n";
+            SetConsoleTextAttribute(h, 12);
+            centerText("Invalid choice. Please try again.");
+            SetConsoleTextAttribute(h, 7);
         }
     } while (choice != 6);
 }
 
 void Candidate::addInterest(const string& interest) {
     interests.push_back(interest);
-    cout << "Interest added successfully.\n";
+    SetConsoleTextAttribute(h, 10);
+    centerText("Interest added successfully.");
+    SetConsoleTextAttribute(h, 7);
 }
 
 void Candidate::addExperience(const string& exp) {
     experience.push_back(exp);
-    cout << "Work experience added successfully.\n";
+    SetConsoleTextAttribute(h, 10);
+    centerText("Work experience added successfully.");
+    SetConsoleTextAttribute(h, 7);
 }
 
 void Candidate::addEducation(const string& edu) {
     education.push_back(edu);
-    cout << "Education added successfully.\n";
+    SetConsoleTextAttribute(h, 10);
+    centerText("Education added successfully.");
+    SetConsoleTextAttribute(h, 7);
 }
 
 /* =========================================================
@@ -256,7 +274,9 @@ void Candidate::applyForJob(int jobId) {
     std::vector<std::string> answers;
 
     if (!questions.empty()) {
-        cout << "\n=== Screening Questions ===\n";
+        printLine('.');
+        centerText("Screening Questions");
+        printLine('.');
         cout << "Please answer the following questions:\n\n";
 
         for (size_t i = 0; i < questions.size(); ++i) {
@@ -283,7 +303,9 @@ void Candidate::viewSkillGap(int jobId) const {
     auto gaps = SystemManager::getInstance().getSkillGap(*this, jobId);
 
     if (gaps.empty()) {
+        printLine('.');
         cout << "No skill gap. You match this job well.\n";
+        printLine('.');
         return;
     }
 
@@ -302,11 +324,14 @@ void Candidate::displayMenu() {
 
     do {
         printLine('=');
+        SetConsoleTextAttribute(h, 3);
         centerText("Candidate Dashboard");
+        SetConsoleTextAttribute(h, 7);
         printLine('=');
+        SetConsoleTextAttribute(h, 6);
         cout << "1. Add/Update Skill with Level\n";
         cout << "2. Remove Skill\n";
-        cout << "3. Build Profile (Interests/Experience/Education)\n";
+        cout << "3. Build Profile (Interests/Experience/Project/Education)\n";
         cout << "4. View Profile Strength\n";
         cout << "5. View Top Matching Jobs\n";
         cout << "6. View All Jobs\n";
@@ -315,6 +340,7 @@ void Candidate::displayMenu() {
         cout << "9. Logout\n";
         cout << "Choice: ";
         cin >> choice;
+        SetConsoleTextAttribute(h, 7);
 
         switch (choice) {
         case 1: {
@@ -324,12 +350,14 @@ void Candidate::displayMenu() {
             getline(cin >> ws, skill);
             
             printLine('-');
+            SetConsoleTextAttribute(h, 6);
             cout << "Select skill level:\n";
             cout << "1. Beginner\n";
             cout << "2. Intermediate\n";
             cout << "3. Expert\n";
             cout << "Choice: ";
             cin >> levelChoice;
+            SetConsoleTextAttribute(h, 7);
             
             SkillLevel level = SkillLevel::Beginner;
             if (levelChoice == 2) level = SkillLevel::Intermediate;
@@ -362,37 +390,114 @@ void Candidate::displayMenu() {
 
         case 5: {
             auto matches =
-                SystemManager::getInstance().getTopMatchingJobsWithScores(*this);
+                SystemManager::getInstance()
+                .getTopMatchingJobsWithScores(*this);
 
             if (matches.empty()) {
-                cout << "No matching jobs found.\n";
+
+                centerText(
+                    "No matching jobs found. "
+                    "Try building your profile or adding more skills."
+                );
+
             } else {
-                cout << "\n=== Top Matching Jobs ===\n";
+
+                centerText("Top Matching Jobs");
+
+                bool foundValidMatch = false;
+
                 for (const auto& match : matches) {
+
                     int jobId = match.first;
                     double score = match.second;
-                    Job* job = SystemManager::getInstance().getJobById(jobId);
-                    if (job) {
-                        cout << "Match Score: " << fixed << setprecision(1) << score << "%\n";
-                        job->displayJobDetails();
-                        printLine('-');
+
+                    // Skip useless matches
+                    if (score <= 0.0) {
+                        continue;
                     }
+
+                    Job* job =
+                        SystemManager::getInstance()
+                        .getJobById(jobId);
+
+                    // Debug checks
+                    if (job == nullptr) {
+                        cout << "NULL JOB FOUND for ID: "
+                            << jobId << "\n";
+                        continue;
+                    }
+
+                    if (job->getTitle().empty()) {
+                        continue;
+                    }
+
+                    foundValidMatch = true;
+
+                    printLine('-');
+
+                    cout << "Match Score: "
+                        << fixed
+                        << setprecision(1)
+                        << score
+                        << "%\n";
+
+                    job->displayJobDetails();
+
+                    printLine('-');
+                }
+
+                if (!foundValidMatch) {
+                    centerText("No valid matching jobs found.");
                 }
             }
+
             break;
         }
 
         case 6: {
-            auto allJobs = SystemManager::getInstance().getAllJobs();
+
+            auto allJobs =
+                SystemManager::getInstance().getAllJobs();
+
             if (allJobs.empty()) {
+
                 cout << "No jobs available.\n";
+
             } else {
+
                 printLine('#');
                 centerText("All Available Jobs");
                 printLine('#');
+
+                bool foundValidJob = false;
+
                 for (const auto& pair : allJobs) {
-                    pair.second->displayJobDetails();
+
+                    // Debug check
+                    if (pair.second == nullptr) {
+
+                        cout << "NULL JOB FOUND for ID: "
+                            << pair.first << "\n";
+
+                        continue;
+                    }
+
+                    // Prevent empty placeholder jobs
+                    if (pair.second->getTitle().empty()) {
+                        continue;
+                    }
+
+                    foundValidJob = true;
+
                     printLine('-');
+
+                    pair.second->displayJobDetails();
+
+                    printLine('-');
+                }
+
+                if (!foundValidJob) {
+                    cout << "No valid jobs available.\n";
                 }
             }
             break;

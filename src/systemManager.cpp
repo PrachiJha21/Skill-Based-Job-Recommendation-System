@@ -195,6 +195,10 @@ User* SystemManager::loginUser() {
     string email, password;
 
     printLine('=');
+    SetConsoleTextAttribute(h, 2);
+    centerText("Login Dashboard");
+    SetConsoleTextAttribute(h, 7);
+    printLine('=');
 
     cout << "\nEmail: ";
     getline(cin>>ws, email);
@@ -203,8 +207,12 @@ User* SystemManager::loginUser() {
 
     // Check Candidate login
     if (candidates.count(email) &&
-        candidates[email]->authenticate(password))
+        candidates[email]->authenticate(password)){
         return candidates[email];
+        printLine(':');
+        cout << candidates[email]->getUsername() << " logged in successfully!\n";
+        printLine(':');
+        }
 
     // Check Employer login
     if (employers.count(email) &&
@@ -221,9 +229,11 @@ User* SystemManager::loginUser() {
         cout << "Admin access granted.\n";
         return admins[email];
     }
-    printLine('=');
+    printLine(':');
+    SetConsoleTextAttribute(h, 12);
     centerText("Invalid credentials.");
-    printLine('=');
+    SetConsoleTextAttribute(h, 7);
+    printLine(':');
     return nullptr;
 
 

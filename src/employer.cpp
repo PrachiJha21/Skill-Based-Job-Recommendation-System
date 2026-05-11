@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include "utils.h"
 
 using namespace std;
 
@@ -38,7 +39,9 @@ void Employer::postJob() {
     int jobId = system.generateJobId();
     Job* job = new Job(jobId, "", getID());  // Empty title initially, will be set below
 
-    cout << "\n======== FORMAL JOB POSTING ========\n";
+    printLine('=');
+    centerText("FORMAL JOB POSTING");
+    printLine('=');
 
     // Basic Information
     string title, description;
@@ -64,7 +67,9 @@ void Employer::postJob() {
     job->setSalaryRange(salaryRange);
 
     int jobTypeChoice;
-    cout << "Job Type:\n";
+    printLine('-');
+    centerText("Job Type");
+    printLine('-');
     cout << "1. Full-time\n";
     cout << "2. Part-time\n";
     cout << "3. Contract\n";
@@ -86,7 +91,9 @@ void Employer::postJob() {
     }
 
     // Skills Specification
-    cout << "\n=== REQUIRED SKILLS ===\n";
+    printLine('.');
+    centerText("REQUIRED SKILLS");
+    printLine('.');
     int reqSkillCount = readIntWithPrompt("How many required skills? (0/none allowed) ", 0);
 
     for (int i = 0; i < reqSkillCount; i++) {
@@ -98,7 +105,9 @@ void Employer::postJob() {
         }
     }
 
-    cout << "\n=== OPTIONAL SKILLS ===\n";
+    printLine('.');
+    centerText("OPTIONAL SKILLS");
+    printLine('.');
     int optSkillCount = readIntWithPrompt("How many optional skills? (0/none allowed) ", 0);
 
     for (int i = 0; i < optSkillCount; i++) {
@@ -116,7 +125,9 @@ void Employer::postJob() {
     getline(cin >> ws, contactInfo);
     job->setContactInformation(contactInfo);
 
-    cout << "\n=== SCREENING QUESTIONS ===\n";
+    printLine('.');
+    centerText("SCREENING QUESTIONS");
+    printLine('.');
     int questionCount = readIntWithPrompt("How many screening questions? (0/none allowed) ", 0);
 
     for (int i = 0; i < questionCount; i++) {
@@ -131,7 +142,9 @@ void Employer::postJob() {
     system.addJob(job);
     postedJobIDs.push_back(jobId);
 
-    cout << "\n 🎉 Job posted successfully with ID " << jobId << "!\n";
+    SetConsoleTextAttribute(h, 10);
+    cout << "\n Job posted successfully with ID " << jobId << "!\n";
+    SetConsoleTextAttribute(h, 7);
     system.saveData();  // Auto-save after job posting
 }
 
@@ -145,7 +158,7 @@ void Employer::editJob(int jobId) {
     Job* job = system.getJobById(jobId);
 
     if (!job) {
-        cout << "Job not found.\n";
+        centerText("Job not found!");
         return;
     }
 
@@ -154,6 +167,9 @@ void Employer::editJob(int jobId) {
     getline(cin >> ws, newTitle);
     job->setTitle(newTitle);
 
+    printLine('-');
+    centerText("Skills");
+    printLine('-');
     cout << "Clear and re‑enter skills? (y/n): ";
     char choice;
     cin >> choice;
@@ -185,7 +201,7 @@ void Employer::deleteJob(int jobId) {
     SystemManager& system = SystemManager::getInstance();
 
     if (!system.removeJob(jobId)) {
-        cout << "Job not found.\n";
+        centerText("Job not found or could not be deleted.");
         return;
     }
 
@@ -194,7 +210,7 @@ void Employer::deleteJob(int jobId) {
         postedJobIDs.end()
     );
 
-    cout << "Job deleted successfully.\n";
+    centerText("Job deleted successfully.");
 }
 
 
@@ -207,17 +223,27 @@ void Employer::viewApplicants(int jobId) const {
     auto apps = system.getApplicationsForJob(jobId);
 
     if (apps.empty()) {
-        cout << "No applications for this job yet.\n";
+        centerText("No applications for this job yet.");
         return;
     }
 
-    cout << "\nApplicants for Job ID " << jobId << ":\n";
+    printLine('-');
+    centerText("Applicants for Job ID " + to_string(jobId));
+    printLine('-');
 
     for (const Application* app : apps) {
+        printLine('-');
         cout << "Candidate ID: " << app->getCandidateId()
              << " | Status: "
              << Application::statusToString(app->getStatus())
              << "\n";
+        const auto& answers = app->getScreeningAnswers();
+        if (!answers.empty()) {
+            cout << "Screening Answers:\n";
+            for (size_t i = 0; i < answers.size(); ++i) {
+                cout << "Q" << (i + 1) << ": " << answers[i] << "\n";
+            }
+        }
     }
 }
 
@@ -236,18 +262,19 @@ const vector<int>& Employer::getPostedJobIDs() const {
 
 
 /* =========================
-   Menu (SESSION LOOP ✅)
+   Menu (SESSION LOOP )
    ========================= */
 
 void Employer::displayMenu() {
     int choice;
 
     do {
-        cout << setfill('=') << setw(100) << "=" << endl;
-        cout << setfill(' ');   
-        cout << setw(38) <<" " << "Employer Dashboard" << endl;
-        cout << setfill('=') << setw(100) << "=" << endl;
-        cout << setfill(' ');
+        printLine('=');
+        SetConsoleTextAttribute(h, 3);
+        centerText("Employer Dashboard");
+        SetConsoleTextAttribute(h, 7);
+        printLine('=');
+        SetConsoleTextAttribute(h, 5);
         cout << "1. Post Job\n";
         cout << "2. Edit Job\n";
         cout << "3. Delete Job\n";
@@ -255,7 +282,8 @@ void Employer::displayMenu() {
         cout << "5. Logout\n";
         cout << "Choice: ";
         cin >> choice;
-
+        SetConsoleTextAttribute(h, 7);
+        
         switch (choice) {
         case 1:
             postJob();

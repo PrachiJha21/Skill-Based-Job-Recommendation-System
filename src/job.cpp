@@ -1,5 +1,5 @@
 #include "job.h"
-
+#include "utils.h"
 #include <sstream>
 #include <vector>
 #include <iostream>
@@ -159,7 +159,9 @@ JobType Job::stringToJobType(const std::string& typeStr) {
 }
 
 void Job::displayJobDetails() const {
-    cout << "\n=== JOB DETAILS ===\n";
+    printLine('-');
+    centerText("Job Details");
+    printLine('-');
     cout << "Job ID: " << id << "\n";
     cout << "Title: " << title << "\n";
     cout << "Company: " << companyName << "\n";
